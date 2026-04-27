@@ -1,0 +1,13 @@
+CREATE TABLE cliente (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nome VARCHAR(120) NOT NULL
+);
+
+CREATE TABLE agendamento (
+id INT AUTO_INCREMENT PRIMARY KEY,
+data_hora TIMESTAMP NOT NULL,
+fk_cliente INT,
+CONSTRAINT fk_agendamento_cliente
+FOREIGN KEY (fk_cliente)
+REFERENCES cliente(id)
+);
