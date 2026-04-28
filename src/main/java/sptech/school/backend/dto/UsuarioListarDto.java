@@ -1,17 +1,17 @@
-package sptech.school.backend.entity;
+package sptech.school.backend.dto;
 
-import jakarta.persistence.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Entity
-public class Cliente {
+public class UsuarioListarDto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Id do usuário", example = "1")
     private Long id;
 
+    @Schema(description = "Nome do usuário", example = "Felipe")
     private String nome;
+
+    @Schema(description = "Email do usuário", example = "felipe@email.com")
     private String email;
-    private String senha;
 
     public Long getId() {
         return id;
@@ -35,13 +35,5 @@ public class Cliente {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
     }
 }
