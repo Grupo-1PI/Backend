@@ -14,6 +14,8 @@ public class Cliente {
 
     @Schema(description = "Nome completo do cliente", example = "Gustavo Keniti")
     private String nome;
+    private String email;
+    private String senha;
 
     public Long getId() {
         return id;
@@ -29,5 +31,21 @@ public class Cliente {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
     }
 }
