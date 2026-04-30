@@ -16,9 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-import sptech.school.backend.controller.UsuarioController;
 import sptech.school.backend.service.AutenticacaoService;
-
+import static sptech.school.backend.config.SecurityConstants.COOKIE_NOME;
 import java.io.IOException;
 
 /**
@@ -113,7 +112,7 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (UsuarioController.COOKIE_NOME.equals(cookie.getName())) {
+                if (COOKIE_NOME.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
@@ -142,5 +141,17 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
             autenticacao.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(autenticacao);
         }
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+
+        return path.startsWith("/docs") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/h2-console") ||
+                path.startsWith("/usuarios/login") ||
+                path.startsWith("/error");
     }
 }
