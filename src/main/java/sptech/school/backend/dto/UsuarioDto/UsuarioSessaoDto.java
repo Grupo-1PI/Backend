@@ -2,11 +2,19 @@ package sptech.school.backend.dto.UsuarioDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "DTO de sessão (sem token)")
+@Schema(name = "Usuário - Sessão",
+        description = "Dados de perfil do usuário autenticado. O token de acesso não é incluído aqui por segurança, sendo enviado via Cookie HttpOnly."
+)
 public class UsuarioSessaoDto {
 
+    @Schema(description = "Identificador único do usuário logado", example = "1",
+            accessMode = Schema.AccessMode.READ_ONLY)
     private Long userId;
+
+    @Schema(description = "Nome do usuário para exibição na interface", example = "Fernanda Henckel")
     private String nome;
+
+    @Schema(description = "E-mail do usuário logado", example = "fernanda.henckel@gmail.com")
     private String email;
 
     public Long getUserId() { return userId; }

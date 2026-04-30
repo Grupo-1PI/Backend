@@ -2,11 +2,16 @@ package sptech.school.backend.dto.UsuarioDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "DTO para listagem de usuários")
+@Schema(name = "Usuário - Listar", description = "DTO para listagem de usuários")
 public class UsuarioListarDto {
 
+    @Schema(description = "Id do usuário", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+
+    @Schema(description = "Nome do usuário", example = "Fernanda Henckel")
     private String nome;
+
+    @Schema(description = "Email do usuário", example = "fernanda.henckel@gmail.com")
     private String email;
 
     public Long getId() { return id; }
