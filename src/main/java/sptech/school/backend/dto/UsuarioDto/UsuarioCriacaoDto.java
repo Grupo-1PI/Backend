@@ -1,27 +1,40 @@
 package sptech.school.backend.dto.UsuarioDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDate;
 
-@Schema(description = "DTO para criação de usuário")
+@Schema(name = "Usuario - Criação", description = "DTO para criação de usuário")
 public class UsuarioCriacaoDto {
 
-    @Schema(example = "Felipe")
+    @NotBlank
+    @Size(min = 3, max = 120)
+    @Schema(description = "Nome completo do usuário", example = "Felipe Silva",
+            requiredMode = Schema.RequiredMode.REQUIRED)
     private String nome;
 
-    @Schema(example = "11999999999")
+    @Schema(description = "Número de telefone do usuário", example = "11999999999")
     private String telefone;
 
-    @Schema(example = "felipe@email.com")
+    @Email
+    @NotBlank
+    @Schema(description = "Email do usuário", example = "felipe@email.com")
     private String email;
 
-    @Schema(example = "123456")
+    @NotBlank
+    @Size(min = 6, max = 255)
+    @Schema(description = "Senha do usuário", example = "123456")
     private String senha;
 
-    @Schema(example = "2000-05-10")
+    @NotNull
+    @Schema(description = "Data de nascimento do usuário", example = "2000-05-10")
     private LocalDate dataNascimento;
 
-    @Schema(example = "1", description = "ID do endere\u00e7o (fkEndereco). Se omitido, usa o endere\u00e7o 1 do seed do banco.")
+    @Schema(description = "ID do endereço (fkEndereco). Se omitido, usa o endereço 1 do seed do banco.", example = "1")
     private Long enderecoId;
 
     public String getNome() {
