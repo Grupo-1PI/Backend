@@ -1,21 +1,21 @@
 package sptech.school.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sptech.school.backend.dto.AgendamentoRequestDto;
-import sptech.school.backend.dto.AgendamentoResponseDto;
+import sptech.school.backend.dto.AgendamentoDto.AgendamentoRequestDto;
+import sptech.school.backend.dto.AgendamentoDto.AgendamentoResponseDto;
 import sptech.school.backend.entity.Agendamento;
 import sptech.school.backend.mapper.AgendamentoMapper;
 import sptech.school.backend.service.AgendamentoService;
-
+import java.net.URI;
 import java.util.List;
-@Tag(name = "Agendamentos", description = "Operações relacionados aos agendamentos")
+
+@Tag(name = "Agendamentos")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/agendamentos")
 public class AgendamentoController {
@@ -26,21 +26,34 @@ public class AgendamentoController {
         this.service = service;
     }
 
-    @Operation(summary = "Criar novo agendamento")
-    @ApiResponse(responseCode = "201")
+    @Operation(summary = "Criar agendamento")
+    @ApiResponse(responseCode = "201", description = "Criado com sucesso")
+    @ApiResponse(responseCode = "400", description = "Regra de negócio inválida")
+    @ApiResponse(responseCode = "404", description = "Recurso não encontrado")
+    @ApiResponse(responseCode = "409", description = "Conflito de horário")
     @PostMapping
     public ResponseEntity<AgendamentoResponseDto> criar(@RequestBody AgendamentoRequestDto dto) {
 
         Agendamento agendamento = new Agendamento();
-        agendamento.setDataHora(dto.getDataHora());
+        agendamento.setDataHoraInicio(dto.getDataHoraInicio());
+        agendamento.setDataHoraFim(dto.getDataHoraFim());
+        agendamento.setObservacao(dto.getObservacao());
 
-        Agendamento salvo = service.criar(agendamento, dto.getClienteId());
+        Agendamento salvo = service.criar(
+                agendamento,
+                dto.getClienteId(),
+                dto.getFuncionarioId(),
+                dto.getSalaId(),
+                dto.getServicoId(),
+                dto.getStatusId()
+        );
 
-        return ResponseEntity.status(201).body(AgendamentoMapper.toResponse(salvo));
+        return ResponseEntity.created(URI.create("/agendamentos/" + salvo.getId()))
+                .body(AgendamentoMapper.toResponse(salvo));
     }
 
     @Operation(summary = "Listar agendamentos")
-    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     @GetMapping
     public ResponseEntity<List<AgendamentoResponseDto>> listar() {
 
@@ -52,36 +65,39 @@ public class AgendamentoController {
         return ResponseEntity.ok(lista);
     }
 
-    @Operation(summary = "Atualizar agendamento por ID")
-    @ApiResponse(responseCode = "200")
+    @Operation(summary = "Atualizar agendamento")
+    @ApiResponse(responseCode = "200", description = "Atualizado com sucesso")
+    @ApiResponse(responseCode = "400", description = "Regra inválida")
+    @ApiResponse(responseCode = "404", description = "Não encontrado")
+    @ApiResponse(responseCode = "409", description = "Conflito de horário")
     @PutMapping("/{id}")
     public ResponseEntity<AgendamentoResponseDto> atualizar(
-            @Parameter(
-                    name = "id",
-                    description = "Identificador único do agendamento",
-                    schema = @Schema(type = "string", format = "ID numérico", example = "1")
-            )
             @PathVariable Long id,
             @RequestBody AgendamentoRequestDto dto) {
 
-        Agendamento agendamento = new Agendamento();
-        agendamento.setDataHora(dto.getDataHora());
+        Agendamento novo = new Agendamento();
+        novo.setDataHoraInicio(dto.getDataHoraInicio());
+        novo.setDataHoraFim(dto.getDataHoraFim());
+        novo.setObservacao(dto.getObservacao());
 
-        Agendamento atualizado = service.atualizar(id, agendamento, dto.getClienteId());
+        Agendamento atualizado = service.atualizar(
+                id,
+                novo,
+                dto.getClienteId(),
+                dto.getFuncionarioId(),
+                dto.getSalaId(),
+                dto.getServicoId(),
+                dto.getStatusId()
+        );
 
         return ResponseEntity.ok(AgendamentoMapper.toResponse(atualizado));
     }
 
-    @Operation(summary = "Apagar agendamento por ID")
-    @ApiResponse(responseCode = "204")
+    @Operation(summary = "Deletar agendamento")
+    @ApiResponse(responseCode = "204", description = "Deletado com sucesso")
+    @ApiResponse(responseCode = "404", description = "Não encontrado")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(
-            @Parameter(
-                    name = "id",
-                    description = "Identificador único do agendamento",
-                    schema = @Schema(type = "string", format = "ID numérico", example = "1")
-            )
-            @PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);
         return ResponseEntity.noContent().build();
     }

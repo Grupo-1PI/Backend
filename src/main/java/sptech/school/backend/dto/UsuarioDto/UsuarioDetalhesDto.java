@@ -1,42 +1,32 @@
-package sptech.school.backend.dto;
+package sptech.school.backend.dto.UsuarioDto;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import sptech.school.backend.entity.Cliente;
-
+import sptech.school.backend.entity.Usuario;
 import java.util.Collection;
+import java.util.Collections;
 
 public class UsuarioDetalhesDto implements UserDetails {
 
-    private final String nome;
+    private final Usuario usuario;
 
-    private final String email;
-
-    private final String senha;
-
-    public UsuarioDetalhesDto(Cliente usuario) {
-        this.nome = usuario.getNome();
-        this.email = usuario.getEmail();
-        this.senha = usuario.getSenha();
-    }
-
-    public String getNome() {
-        return nome;
+    public UsuarioDetalhesDto(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public String getPassword() {
-        return senha;
+        return usuario.getSenha();
     }
 
     @Override
     public String getUsername() {
-        return email;
+        return usuario.getEmail();
     }
 
     @Override
@@ -56,6 +46,10 @@ public class UsuarioDetalhesDto implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return usuario.getAtivo();
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
     }
 }
