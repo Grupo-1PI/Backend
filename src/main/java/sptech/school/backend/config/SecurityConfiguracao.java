@@ -22,7 +22,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import sptech.school.backend.service.AutenticacaoService;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -67,6 +66,9 @@ public class SecurityConfiguracao {
      * Utilize {@code requestMatchers(String...)} diretamente com padrões Ant.</p>
      */
     private static final String[] URLS_PERMITIDAS = {
+            // SpringDoc Swagger UI (custom path: springdoc.swagger-ui.path=/docs)
+            "/docs",
+            "/docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/swagger-resources",
@@ -78,6 +80,7 @@ public class SecurityConfiguracao {
             "/webjars/**",
             "/v3/api-docs/**",
             "/actuator/*",
+            "/usuarios",
             "/usuarios/login/**",
             "/usuarios/logout/**",
             "/h2-console/**",

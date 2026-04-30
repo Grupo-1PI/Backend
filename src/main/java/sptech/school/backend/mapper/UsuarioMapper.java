@@ -1,64 +1,65 @@
 package sptech.school.backend.mapper;
 
-import sptech.school.backend.dto.*;
-import sptech.school.backend.entity.Cliente;
+import sptech.school.backend.dto.UsuarioDto.*;
+import sptech.school.backend.entity.Usuario;
 
 public class UsuarioMapper {
 
-    public static Cliente of(UsuarioCriacaoDto usuarioCriacaoDto) {
-        Cliente usuario = new Cliente();
+    public static Usuario toEntity(UsuarioCriacaoDto dto) {
 
-        usuario.setEmail(usuarioCriacaoDto.getEmail());
-        usuario.setNome(usuarioCriacaoDto.getNome());
-        usuario.setSenha(usuarioCriacaoDto.getSenha());
+        Usuario usuario = new Usuario();
 
-        return usuario;
-    }
-
-    public static Cliente of(UsuarioLoginDto usuarioLoginDto) {
-        Cliente usuario = new Cliente();
-
-        usuario.setEmail(usuarioLoginDto.getEmail());
-        usuario.setSenha(usuarioLoginDto.getSenha());
+        usuario.setNome(dto.getNome());
+        usuario.setEmail(dto.getEmail());
+        usuario.setSenha(dto.getSenha());
+        usuario.setTelefone(dto.getTelefone());
+        usuario.setDataNascimento(dto.getDataNascimento());
+        usuario.setAtivo(true);
 
         return usuario;
     }
 
-    public static UsuarioTokenDto of(Cliente usuario, String token) {
-        UsuarioTokenDto usuarioTokenDto = new UsuarioTokenDto();
+    public static Usuario toLoginEntity(UsuarioLoginDto dto) {
 
-        usuarioTokenDto.setUserId(usuario.getId());
-        usuarioTokenDto.setEmail(usuario.getEmail());
-        usuarioTokenDto.setNome(usuario.getNome());
-        usuarioTokenDto.setToken(token);
+        Usuario usuario = new Usuario();
 
-        return usuarioTokenDto;
+        usuario.setEmail(dto.getEmail());
+        usuario.setSenha(dto.getSenha());
+
+        return usuario;
     }
 
-    /**
-     * Mapeia para o DTO de resposta do login — sem o token.
-     *
-     * <p>O token não pertence ao body: ele é enviado como cookie HttpOnly
-     * via {@code Set-Cookie}. Este DTO carrega apenas os dados necessários
-     * para o frontend identificar o usuário na sessão.</p>
-     */
-    public static UsuarioSessaoDto ofSessao(UsuarioTokenDto tokenDto) {
-        UsuarioSessaoDto dto = new UsuarioSessaoDto();
+    public static UsuarioTokenDto toTokenDto(Usuario usuario, String token) {
 
-        dto.setUserId(tokenDto.getUserId());
-        dto.setEmail(tokenDto.getEmail());
-        dto.setNome(tokenDto.getNome());
+        UsuarioTokenDto dto = new UsuarioTokenDto();
+
+        dto.setUserId(usuario.getId());
+        dto.setNome(usuario.getNome());
+        dto.setEmail(usuario.getEmail());
+        dto.setToken(token);
 
         return dto;
     }
 
-    public static UsuarioListarDto of(Cliente usuario) {
-        UsuarioListarDto usuarioListarDto = new UsuarioListarDto();
+    public static UsuarioSessaoDto toSessaoDto(UsuarioTokenDto tokenDto) {
 
-        usuarioListarDto.setId(usuario.getId());
-        usuarioListarDto.setEmail(usuario.getEmail());
-        usuarioListarDto.setNome(usuario.getNome());
+        UsuarioSessaoDto dto = new UsuarioSessaoDto();
 
-        return usuarioListarDto;
+        dto.setUserId(tokenDto.getUserId());
+        dto.setNome(tokenDto.getNome());
+        dto.setEmail(tokenDto.getEmail());
+
+        return dto;
+    }
+
+    public static UsuarioListarDto toListDto(Usuario usuario) {
+
+        UsuarioListarDto dto = new UsuarioListarDto();
+
+        dto.setId(usuario.getId());
+        dto.setNome(usuario.getNome());
+        dto.setEmail(usuario.getEmail());
+
+        return dto;
     }
 }

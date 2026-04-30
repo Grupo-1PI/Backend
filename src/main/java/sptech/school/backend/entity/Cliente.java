@@ -7,15 +7,18 @@ import jakarta.persistence.*;
 @Schema(name = "Cliente", description = "Representa um cliente do sistema")
 public class Cliente {
 
-    @Schema(description = "ID do cliente", example = "1")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "ID do cliente", example = "1")
     private Long id;
 
-    @Schema(description = "Nome completo do cliente", example = "Gustavo Keniti")
-    private String nome;
-    private String email;
-    private String senha;
+    @OneToOne
+    @JoinColumn(name = "fkUsuario")
+    @Schema(description = "Usuário vinculado ao cliente")
+    private Usuario usuario;
+
+    @Schema(description = "Observação do cliente", example = "Cliente VIP")
+    private String observacao;
 
     public Long getId() {
         return id;
@@ -25,27 +28,19 @@ public class Cliente {
         this.id = id;
     }
 
-    public String getNome() {
-        return nome;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
-    public String getEmail() {
-        return email;
+    public String getObservacao() {
+        return observacao;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
     }
 }
