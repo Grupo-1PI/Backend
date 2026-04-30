@@ -2,26 +2,46 @@ package sptech.school.backend.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import org.hibernate.validator.constraints.ScriptAssert;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Schema(name = "Agendamento", description = "Dados do agendamento com cliente")
+@Schema(name = "Agendamento", description = "Representa um agendamento")
 public class Agendamento {
 
-    @Schema(description = "ID do agendamento", example = "1")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(example = "1")
     private Long id;
 
-    @Schema(description = "Data e hora do agendamento", example = "2023-12-25T14:30:00")
-    private LocalDateTime dataHora;
+    @Column(name = "data_hora_inicio")
+    @Schema(example = "2026-05-01T14:00:00")
+    private LocalDateTime dataHoraInicio;
 
-    @Schema(description = "Dados do cliente vinculado ao agendamento")
+    @Column(name = "data_hora_fim")
+    @Schema(example = "2026-05-01T15:00:00")
+    private LocalDateTime dataHoraFim;
+
+    private String observacao;
+
     @ManyToOne
-    @JoinColumn(name = "fk_cliente")
+    @JoinColumn(name = "fkCliente")
     private Cliente cliente;
+
+    @ManyToOne
+    @JoinColumn(name = "fkFuncionario")
+    private Funcionario funcionario;
+
+    @ManyToOne
+    @JoinColumn(name = "fkSala")
+    private Sala sala;
+
+    @ManyToOne
+    @JoinColumn(name = "fkServico")
+    private Servico servico;
+
+    @ManyToOne
+    @JoinColumn(name = "fkStatus")
+    private Status status;
 
     public Long getId() {
         return id;
@@ -31,12 +51,28 @@ public class Agendamento {
         this.id = id;
     }
 
-    public LocalDateTime getDataHora() {
-        return dataHora;
+    public LocalDateTime getDataHoraInicio() {
+        return dataHoraInicio;
     }
 
-    public void setDataHora(LocalDateTime dataHora) {
-        this.dataHora = dataHora;
+    public void setDataHoraInicio(LocalDateTime dataHoraInicio) {
+        this.dataHoraInicio = dataHoraInicio;
+    }
+
+    public LocalDateTime getDataHoraFim() {
+        return dataHoraFim;
+    }
+
+    public void setDataHoraFim(LocalDateTime dataHoraFim) {
+        this.dataHoraFim = dataHoraFim;
+    }
+
+    public String getObservacao() {
+        return observacao;
+    }
+
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
     }
 
     public Cliente getCliente() {
@@ -46,5 +82,36 @@ public class Agendamento {
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
     }
-}
 
+    public Funcionario getFuncionario() {
+        return funcionario;
+    }
+
+    public void setFuncionario(Funcionario funcionario) {
+        this.funcionario = funcionario;
+    }
+
+    public Sala getSala() {
+        return sala;
+    }
+
+    public void setSala(Sala sala) {
+        this.sala = sala;
+    }
+
+    public Servico getServico() {
+        return servico;
+    }
+
+    public void setServico(Servico servico) {
+        this.servico = servico;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+}

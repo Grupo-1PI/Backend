@@ -1,4 +1,4 @@
-package sptech.school.Backend;
+package sptech.school.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

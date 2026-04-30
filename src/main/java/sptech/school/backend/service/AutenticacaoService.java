@@ -1,36 +1,30 @@
 package sptech.school.backend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import sptech.school.backend.entity.Cliente;
-import sptech.school.backend.repository.ClienteRepository;
-import sptech.school.backend.dto.UsuarioDetalhesDto;
-
-import java.util.Optional;
+import sptech.school.backend.entity.Usuario;
+import sptech.school.backend.repository.UsuarioRepository;
+import sptech.school.backend.dto.UsuarioDto.UsuarioDetalhesDto;
 
 @Service
 public class AutenticacaoService implements UserDetailsService {
 
-    private ClienteRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public AutenticacaoService(ClienteRepository usuarioRepository) {
+    public AutenticacaoService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    // Método da interface implementada
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) {
 
-        Optional<Cliente> usuarioOpt = usuarioRepository.findByEmail(username);
+        Usuario usuario = usuarioRepository.findByEmail(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("Usuário não encontrado")
+                );
 
-        if (usuarioOpt.isEmpty()) {
-
-            throw new UsernameNotFoundException(String.format("usuário: %s não encontrado", username));
-        }
-
-        return new UsuarioDetalhesDto(usuarioOpt.get());
+        return new UsuarioDetalhesDto(usuario);
     }
 }

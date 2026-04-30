@@ -1,6 +1,6 @@
 package sptech.school.backend.mapper;
 
-import sptech.school.backend.dto.AgendamentoResponseDto;
+import sptech.school.backend.dto.AgendamentoDto.AgendamentoResponseDto;
 import sptech.school.backend.entity.Agendamento;
 
 public class AgendamentoMapper {
@@ -10,8 +10,14 @@ public class AgendamentoMapper {
         AgendamentoResponseDto dto = new AgendamentoResponseDto();
 
         dto.setId(agendamento.getId());
-        dto.setDataHora(agendamento.getDataHora());
-        dto.setClienteNome(agendamento.getCliente().getNome());
+        dto.setDataHoraInicio(agendamento.getDataHoraInicio());
+        dto.setDataHoraFim(agendamento.getDataHoraFim());
+
+        dto.setClienteNome(agendamento.getCliente().getUsuario().getNome());
+        dto.setFuncionarioNome(agendamento.getFuncionario().getUsuario().getNome());
+        dto.setSalaDescricao(agendamento.getSala().getDescricao());
+        dto.setServicoNome(agendamento.getServico().getNome());
+        dto.setStatusNome(agendamento.getStatus().getNome());
 
         return dto;
     }
