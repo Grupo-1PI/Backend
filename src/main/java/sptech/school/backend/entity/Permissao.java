@@ -1,5 +1,7 @@
 package sptech.school.backend.entity;
 
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -8,6 +10,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "permissoes")
+@Schema(name = "Permissao", description = "Permissão vinculada ao cargo")
 public class Permissao {
 
     @Id

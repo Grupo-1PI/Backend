@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "cargo")
@@ -18,12 +19,17 @@ public class Cargo {
     private String descricao;
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(
             name = "permissoes_cargo",
             joinColumns = @JoinColumn(name = "fkCargo"),
             inverseJoinColumns = @JoinColumn(name = "fkPermissoes")
     )
     private Set<Permissao> permissoes = new HashSet<>();
+    private List<Permissao> permissoes;
+
+    @OneToMany(mappedBy = "cargo")
+    private List<Funcionario> funcionarios;
 
     public Long getId() {
         return id;
@@ -56,4 +62,21 @@ public class Cargo {
     public void setPermissoes(Set<Permissao> permissoes) {
         this.permissoes = permissoes;
     }
+
+    public List<Permissao> getPermissoes() {
+        return permissoes;
+    }
+
+    public void setPermissoes(List<Permissao> permissoes) {
+        this.permissoes = permissoes;
+    }
+
+    public List<Funcionario> getFuncionarios() {
+        return funcionarios;
+    }
+
+    public void setFuncionarios(List<Funcionario> funcionarios) {
+        this.funcionarios = funcionarios;
+    }
+
 }
