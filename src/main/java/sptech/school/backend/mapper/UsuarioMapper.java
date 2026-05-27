@@ -33,7 +33,7 @@ public class UsuarioMapper {
 
         UsuarioTokenDto dto = new UsuarioTokenDto();
 
-        dto.setUserId(usuario.getId());
+        dto.setUsuarioId(usuario.getId());
         dto.setNome(usuario.getNome());
         dto.setEmail(usuario.getEmail());
         dto.setToken(token);
@@ -45,7 +45,7 @@ public class UsuarioMapper {
 
         UsuarioSessaoDto dto = new UsuarioSessaoDto();
 
-        dto.setUserId(tokenDto.getUserId());
+        dto.setUserId(tokenDto.getUsuarioId());
         dto.setNome(tokenDto.getNome());
         dto.setEmail(tokenDto.getEmail());
 

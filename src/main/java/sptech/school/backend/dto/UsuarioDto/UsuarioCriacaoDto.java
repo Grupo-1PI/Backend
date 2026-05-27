@@ -1,10 +1,12 @@
 package sptech.school.backend.dto.UsuarioDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import sptech.school.backend.dto.EnderecoDto.EnderecoDto;
 
 import java.time.LocalDate;
 
@@ -35,7 +37,9 @@ public class UsuarioCriacaoDto {
     private LocalDate dataNascimento;
 
     @Schema(description = "ID do endereço (fkEndereco). Se omitido, usa o endereço 1 do seed do banco.", example = "1")
-    private Long enderecoId;
+    @Valid
+    @NotNull
+    private EnderecoDto endereco;
 
     public String getNome() {
         return nome;
@@ -77,11 +81,11 @@ public class UsuarioCriacaoDto {
         this.dataNascimento = dataNascimento;
     }
 
-    public Long getEnderecoId() {
-        return enderecoId;
+    public EnderecoDto getEndereco() {
+        return endereco;
     }
 
-    public void setEnderecoId(Long enderecoId) {
-        this.enderecoId = enderecoId;
+    public void setEndereco(EnderecoDto endereco) {
+        this.endereco = endereco;
     }
 }

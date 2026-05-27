@@ -2,6 +2,8 @@ package sptech.school.backend.dto.AgendamentoDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Schema(description = "DTO de resposta de agendamento")
 public class AgendamentoResponseDto {
@@ -10,11 +12,12 @@ public class AgendamentoResponseDto {
 
     private LocalDateTime dataHoraInicio;
     private LocalDateTime dataHoraFim;
+    private String observacao;
 
     private String clienteNome;
-    private String funcionarioNome;
+    private List<String> funcionarios = new ArrayList<>();
     private String salaDescricao;
-    private String servicoNome;
+    private List<String> servicos = new ArrayList<>();
     private String statusNome;
 
     public Long getId() {
@@ -41,6 +44,14 @@ public class AgendamentoResponseDto {
         this.dataHoraFim = dataHoraFim;
     }
 
+    public String getObservacao() {
+        return observacao;
+    }
+
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
+    }
+
     public String getClienteNome() {
         return clienteNome;
     }
@@ -49,12 +60,12 @@ public class AgendamentoResponseDto {
         this.clienteNome = clienteNome;
     }
 
-    public String getFuncionarioNome() {
-        return funcionarioNome;
+    public List<String> getFuncionarios() {
+        return funcionarios;
     }
 
-    public void setFuncionarioNome(String funcionarioNome) {
-        this.funcionarioNome = funcionarioNome;
+    public void setFuncionarios(List<String> funcionarios) {
+        this.funcionarios = funcionarios;
     }
 
     public String getSalaDescricao() {
@@ -65,12 +76,12 @@ public class AgendamentoResponseDto {
         this.salaDescricao = salaDescricao;
     }
 
-    public String getServicoNome() {
-        return servicoNome;
+    public List<String> getServicos() {
+        return servicos;
     }
 
-    public void setServicoNome(String servicoNome) {
-        this.servicoNome = servicoNome;
+    public void setServicos(List<String> servicos) {
+        this.servicos = servicos;
     }
 
     public String getStatusNome() {

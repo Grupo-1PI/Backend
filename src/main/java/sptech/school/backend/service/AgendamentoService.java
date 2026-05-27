@@ -1,10 +1,25 @@
 package sptech.school.backend.service;
 
 import org.springframework.stereotype.Service;
-import sptech.school.backend.entity.*;
+import org.springframework.transaction.annotation.Transactional;
+import sptech.school.backend.entity.Agendamento;
+import sptech.school.backend.entity.AtendimentoServico;
+import sptech.school.backend.entity.Cliente;
+import sptech.school.backend.entity.Funcionario;
+import sptech.school.backend.entity.FuncionarioAgendamento;
+import sptech.school.backend.entity.FuncionarioAgendamentoId;
+import sptech.school.backend.entity.Sala;
+import sptech.school.backend.entity.Servico;
+import sptech.school.backend.entity.Status;
 import sptech.school.backend.exception.RecursoNaoEncontradoException;
-import sptech.school.backend.repository.*;
+import sptech.school.backend.repository.AgendamentoRepository;
+import sptech.school.backend.repository.ClienteRepository;
+import sptech.school.backend.repository.FuncionarioRepository;
+import sptech.school.backend.repository.SalaRepository;
+import sptech.school.backend.repository.ServicoRepository;
+import sptech.school.backend.repository.StatusRepository;
 import sptech.school.backend.strategy.RegraAgendamentoStrategy;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -36,6 +51,7 @@ public class AgendamentoService {
         this.regras = regras;
     }
 
+    @Transactional
     public Agendamento criar(
             Agendamento agendamento,
             Long clienteId,
@@ -44,39 +60,47 @@ public class AgendamentoService {
             Long servicoId,
             Long statusId
     ) {
-
-        Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
-
-        Funcionario funcionario = funcionarioRepository.findById(funcionarioId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Funcionário não encontrado"));
-
-        Sala sala = salaRepository.findById(salaId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Sala não encontrada"));
-
-        Servico servico = servicoRepository.findById(servicoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Serviço não encontrado"));
-
-        Status status = statusRepository.findById(statusId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Status não encontrado"));
+        Cliente cliente = buscarCliente(clienteId);
+        Funcionario funcionario = buscarFuncionario(funcionarioId);
+        Sala sala = buscarSala(salaId);
+        Servico servico = buscarServico(servicoId);
+        Status status = buscarStatus(statusId);
 
         agendamento.setCliente(cliente);
-        agendamento.setFuncionario(funcionario);
         agendamento.setSala(sala);
-        agendamento.setServico(servico);
         agendamento.setStatus(status);
 
-        for (RegraAgendamentoStrategy regra : regras) {
-            regra.validar(agendamento);
-        }
+        validarRegras(agendamento, funcionarioId, servicoId, 0L);
 
-        return agendamentoRepository.save(agendamento);
+        Agendamento salvo = agendamentoRepository.save(agendamento);
+        vincularFuncionario(salvo, funcionario);
+        vincularServico(salvo, servico);
+
+        return agendamentoRepository.save(salvo);
     }
 
     public List<Agendamento> listar() {
         return agendamentoRepository.findAll();
     }
 
+    public Agendamento buscarPorId(Long id) {
+        return agendamentoRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Agendamento nao encontrado"));
+    }
+
+    public List<Agendamento> listarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+        return agendamentoRepository.findByPeriodo(inicio, fim);
+    }
+
+    public List<Agendamento> listarPorStatus(Long statusId) {
+        return agendamentoRepository.findByStatusId(statusId);
+    }
+
+    public List<Agendamento> listarPorCliente(Long clienteId) {
+        return agendamentoRepository.findByClienteId(clienteId);
+    }
+
+    @Transactional
     public Agendamento atualizar(
             Long id,
             Agendamento novo,
@@ -86,47 +110,83 @@ public class AgendamentoService {
             Long servicoId,
             Long statusId
     ) {
-
-        Agendamento existente = agendamentoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Agendamento não encontrado"));
-
-        Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
-
-        Funcionario funcionario = funcionarioRepository.findById(funcionarioId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Funcionário não encontrado"));
-
-        Sala sala = salaRepository.findById(salaId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Sala não encontrada"));
-
-        Servico servico = servicoRepository.findById(servicoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Serviço não encontrado"));
-
-        Status status = statusRepository.findById(statusId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Status não encontrado"));
+        Agendamento existente = buscarPorId(id);
+        Cliente cliente = buscarCliente(clienteId);
+        Funcionario funcionario = buscarFuncionario(funcionarioId);
+        Sala sala = buscarSala(salaId);
+        Servico servico = buscarServico(servicoId);
+        Status status = buscarStatus(statusId);
 
         existente.setDataHoraInicio(novo.getDataHoraInicio());
         existente.setDataHoraFim(novo.getDataHoraFim());
         existente.setObservacao(novo.getObservacao());
         existente.setCliente(cliente);
-        existente.setFuncionario(funcionario);
         existente.setSala(sala);
-        existente.setServico(servico);
         existente.setStatus(status);
 
-        for (RegraAgendamentoStrategy regra : regras) {
-            regra.validar(existente);
-        }
+        validarRegras(existente, funcionarioId, servicoId, id);
+
+        existente.getFuncionarioAgendamentos().clear();
+        existente.getAtendimentoServicos().clear();
+        agendamentoRepository.flush();
+
+        vincularFuncionario(existente, funcionario);
+        vincularServico(existente, servico);
 
         return agendamentoRepository.save(existente);
     }
 
+    @Transactional
     public void deletar(Long id) {
+        Agendamento agendamento = buscarPorId(id);
+        agendamentoRepository.delete(agendamento);
+    }
 
-        if (!agendamentoRepository.existsById(id)) {
-            throw new RecursoNaoEncontradoException("Agendamento não encontrado");
+    private void validarRegras(Agendamento agendamento, Long funcionarioId, Long servicoId, Long ignorarId) {
+        for (RegraAgendamentoStrategy regra : regras) {
+            regra.validar(agendamento, funcionarioId, servicoId, ignorarId);
         }
+    }
 
-        agendamentoRepository.deleteById(id);
+    private void vincularFuncionario(Agendamento agendamento, Funcionario funcionario) {
+        FuncionarioAgendamento vinculo = new FuncionarioAgendamento();
+        vinculo.setId(new FuncionarioAgendamentoId(funcionario.getId(), agendamento.getId()));
+        vinculo.setFuncionario(funcionario);
+        vinculo.setAgendamento(agendamento);
+        agendamento.getFuncionarioAgendamentos().add(vinculo);
+    }
+
+    private void vincularServico(Agendamento agendamento, Servico servico) {
+        AtendimentoServico atendimentoServico = new AtendimentoServico();
+        atendimentoServico.setAgendamento(agendamento);
+        atendimentoServico.setServico(servico);
+        atendimentoServico.setValorUnitario(servico.getValor());
+        atendimentoServico.setDescricao(servico.getDescricao());
+        agendamento.getAtendimentoServicos().add(atendimentoServico);
+    }
+
+    private Cliente buscarCliente(Long clienteId) {
+        return clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente nao encontrado"));
+    }
+
+    private Funcionario buscarFuncionario(Long funcionarioId) {
+        return funcionarioRepository.findById(funcionarioId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Funcionario nao encontrado"));
+    }
+
+    private Sala buscarSala(Long salaId) {
+        return salaRepository.findById(salaId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Sala nao encontrada"));
+    }
+
+    private Servico buscarServico(Long servicoId) {
+        return servicoRepository.findById(servicoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Servico nao encontrado"));
+    }
+
+    private Status buscarStatus(Long statusId) {
+        return statusRepository.findById(statusId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Status nao encontrado"));
     }
 }
