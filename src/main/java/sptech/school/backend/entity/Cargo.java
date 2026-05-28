@@ -2,8 +2,6 @@ package sptech.school.backend.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
 
 @Entity
@@ -18,14 +16,12 @@ public class Cargo {
     private String nome;
     private String descricao;
 
-    @ManyToMany(fetch = FetchType.EAGER)
     @ManyToMany
     @JoinTable(
             name = "permissoes_cargo",
             joinColumns = @JoinColumn(name = "fkCargo"),
             inverseJoinColumns = @JoinColumn(name = "fkPermissoes")
     )
-    private Set<Permissao> permissoes = new HashSet<>();
     private List<Permissao> permissoes;
 
     @OneToMany(mappedBy = "cargo")
@@ -53,14 +49,6 @@ public class Cargo {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
-    }
-
-    public Set<Permissao> getPermissoes() {
-        return permissoes;
-    }
-
-    public void setPermissoes(Set<Permissao> permissoes) {
-        this.permissoes = permissoes;
     }
 
     public List<Permissao> getPermissoes() {
