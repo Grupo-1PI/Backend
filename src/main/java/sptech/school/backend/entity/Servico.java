@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -34,7 +35,7 @@ public class Servico {
             joinColumns = @JoinColumn(name = "fkServico"),
             inverseJoinColumns = @JoinColumn(name = "fkSala")
     )
-    private Set<Sala> salas = new HashSet<>();
+    private List<Sala> salas;
 
     public Long getId() {
         return id;
@@ -74,13 +75,5 @@ public class Servico {
 
     public void setTempoMedio(Integer tempoMedio) {
         this.tempoMedio = tempoMedio;
-    }
-
-    public Set<Sala> getSalas() {
-        return salas;
-    }
-
-    public void setSalas(Set<Sala> salas) {
-        this.salas = salas;
     }
 }
