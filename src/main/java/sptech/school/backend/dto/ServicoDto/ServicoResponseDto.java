@@ -1,42 +1,19 @@
-package sptech.school.backend.entity;
+package sptech.school.backend.dto.ServicoDto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
+import sptech.school.backend.entity.Sala;
+
 import java.math.BigDecimal;
 import java.util.List;
 
-@Entity
-@Table(name = "servico")
-@Schema(name = "Servico", description = "Representa um serviço oferecido")
-public class Servico {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(example = "1")
+public class ServicoResponseDto {
     private Long id;
-
-    @Schema(example = "Sessão de Acupuntura")
     private String nome;
-
-    @Schema(example = "120.00")
     private BigDecimal valor;
-
-    @Schema(example = "Sessão padrão")
     private String descricao;
-
-    @Schema(example = "60")
     private Integer tempoMedio;
-
-    @Schema(example = "Sala 1")
-    @ManyToMany
-    @JoinTable(
-            name = "sala_servico",
-            joinColumns = @JoinColumn(name = "fkServico"),
-            inverseJoinColumns = @JoinColumn(name = "fkSala")
-    )
     private List<Sala> salas;
 
-    public Servico(Long id, String nome, BigDecimal valor, String descricao, Integer tempoMedio, List<Sala> salas) {
+    public ServicoResponseDto(Long id, String nome, BigDecimal valor, String descricao, Integer tempoMedio, List<Sala> salas) {
         this.id = id;
         this.nome = nome;
         this.valor = valor;
@@ -45,7 +22,7 @@ public class Servico {
         this.salas = salas;
     }
 
-    public Servico() {
+    public ServicoResponseDto() {
     }
 
     public Long getId() {
