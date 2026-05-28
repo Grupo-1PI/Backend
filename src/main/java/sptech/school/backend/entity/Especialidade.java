@@ -9,6 +9,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -27,7 +28,7 @@ public class Especialidade {
             joinColumns = @JoinColumn(name = "fkEspecialidade"),
             inverseJoinColumns = @JoinColumn(name = "fkServico")
     )
-    private Set<Servico> servicos = new HashSet<>();
+    private List<Servico> servicos;
 
     public Long getId() {
         return id;
@@ -45,11 +46,7 @@ public class Especialidade {
         this.nome = nome;
     }
 
-    public Set<Servico> getServicos() {
+    public List<Servico> getServicos() {
         return servicos;
-    }
-
-    public void setServicos(Set<Servico> servicos) {
-        this.servicos = servicos;
     }
 }
