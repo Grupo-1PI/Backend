@@ -76,4 +76,7 @@ public class Servico {
     public void setTempoMedio(Integer tempoMedio) {
         this.tempoMedio = tempoMedio;
     }
+
+    public List<Sala> getSalas() { return salas; }
+
 }
