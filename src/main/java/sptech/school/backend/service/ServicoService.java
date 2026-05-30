@@ -74,4 +74,9 @@ public class ServicoService {
         }
         repository.save(servico);
     }
+
+    public void deletar(Long id) {
+        Servico servico = repository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Serviço não encontrado"));
+        repository.deleteById(id);
+    }
 }

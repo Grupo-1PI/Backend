@@ -28,15 +28,21 @@ public class ServicoController {
         return ResponseEntity.status(201).build();
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     public ResponseEntity atualizarEntidade(@PathVariable Long id, @RequestBody ServicoRequestDto requestDto) {
         service.atualizarEntidade(id, requestDto);
         return ResponseEntity.status(200).build();
     }
 
-    @PatchMapping
+    @PatchMapping("/{id}")
     public ResponseEntity atualizar(@PathVariable Long id, @RequestBody ServicoRequestDto requestDto) {
         service.atualizar(id, requestDto);
         return ResponseEntity.status(200).build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity deletar(@PathVariable Long id) {
+        service.deletar(id);
+        return ResponseEntity.status(204).build();
     }
 }
