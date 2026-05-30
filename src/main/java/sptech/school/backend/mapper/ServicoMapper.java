@@ -1,5 +1,6 @@
 package sptech.school.backend.mapper;
 
+import org.springframework.stereotype.Component;
 import sptech.school.backend.dto.ServicoDto.ServicoRequestDto;
 import sptech.school.backend.dto.ServicoDto.ServicoResponseDto;
 import sptech.school.backend.entity.Sala;
@@ -9,6 +10,7 @@ import sptech.school.backend.repository.SalaRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class ServicoMapper {
     private final SalaRepository salaRepository;
 
