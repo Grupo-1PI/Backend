@@ -4,7 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 @Entity
-@Schema(name = "Cliente", description = "Representa um cliente do sistema")
+@Table(name = "cliente")
+@Schema(name = "cliente", description = "Representa um cliente do sistema")
 public class Cliente {
 
     @Id
