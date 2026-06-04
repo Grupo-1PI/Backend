@@ -10,6 +10,10 @@ import java.util.List;
 
 public class CargoMapper {
 
+    public static CargoResponseDto toResponse(Cargo cargo) {
+        return toDto(cargo);
+    }
+
     public static CargoResponseDto toDto(Cargo cargo) {
 
         CargoResponseDto dto = new CargoResponseDto();

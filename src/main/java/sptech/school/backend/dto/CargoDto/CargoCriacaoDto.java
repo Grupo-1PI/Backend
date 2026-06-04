@@ -1,19 +1,24 @@
 package sptech.school.backend.dto.CargoDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 @Schema(description = "DTO para criação e atualização de cargo")
 public class CargoCriacaoDto {
 
+    @NotBlank
+    @Size(max = 100)
     @Schema(example = "Administrador")
     private String nome;
 
+    @Size(max = 255)
     @Schema(example = "Acesso total ao sistema")
     private String descricao;
 
     @Schema(example = "[1, 2, 3]")
-    private List<Long> permissaoIds;
+    private List<Long> permissoesIds;
 
     public String getNome() {
         return nome;
@@ -31,11 +36,11 @@ public class CargoCriacaoDto {
         this.descricao = descricao;
     }
 
-    public List<Long> getPermissaoIds() {
-        return permissaoIds;
+    public List<Long> getPermissoesIds() {
+        return permissoesIds;
     }
 
-    public void setPermissaoIds(List<Long> permissaoIds) {
-        this.permissaoIds = permissaoIds;
+    public void setPermissoesIds(List<Long> permissoesIds) {
+        this.permissoesIds = permissoesIds;
     }
 }
