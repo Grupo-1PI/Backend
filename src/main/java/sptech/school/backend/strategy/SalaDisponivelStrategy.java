@@ -6,7 +6,7 @@ import sptech.school.backend.entity.Agendamento;
 import sptech.school.backend.exception.ConflitoException;
 import sptech.school.backend.repository.AgendamentoRepository;
 
-@Order(3)
+@Order(2)
 @Component
 public class SalaDisponivelStrategy implements RegraAgendamentoStrategy {
 
@@ -17,14 +17,14 @@ public class SalaDisponivelStrategy implements RegraAgendamentoStrategy {
     }
 
     @Override
-    public void validar(Agendamento agendamento) {
+    public void validar(Agendamento agendamento, Long funcionarioId, Long servicoId, Long ignorarId) {
 
-        boolean conflito = repository
-                .existsBySalaIdAndDataHoraInicioLessThanAndDataHoraFimGreaterThan(
-                        agendamento.getSala().getId(),
-                        agendamento.getDataHoraFim(),
-                        agendamento.getDataHoraInicio()
-                );
+        boolean conflito = repository.existeConflitoSala(
+                agendamento.getSala().getId(),
+                agendamento.getDataHoraInicio(),
+                agendamento.getDataHoraFim(),
+                ignorarId
+        );
 
         if (conflito) {
             throw new ConflitoException("Sala já está ocupada nesse horário");

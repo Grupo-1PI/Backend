@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sptech.school.backend.dto.UsuarioDto.UsuarioCriacaoDto;
@@ -28,7 +29,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso")
     @ApiResponse(responseCode = "400", description = "Dados inválidos")
     @PostMapping
-    public ResponseEntity<Void> criar(@RequestBody UsuarioCriacaoDto dto) {
+    public ResponseEntity<Void> criar(@Valid @RequestBody UsuarioCriacaoDto dto) {
 
         service.criar(dto);
         return ResponseEntity.status(201).build();
@@ -39,7 +40,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "400", description = "Credenciais inválidas")
     @PostMapping("/login")
     public ResponseEntity<UsuarioTokenDto> login(
-            @RequestBody UsuarioLoginDto dto,
+            @Valid @RequestBody UsuarioLoginDto dto,
             HttpServletResponse response) {
 
         UsuarioTokenDto tokenDto = service.login(dto);

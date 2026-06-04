@@ -3,8 +3,12 @@ package sptech.school.backend.entity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
+@Table(name = "servico")
 @Schema(name = "Servico", description = "Representa um serviço oferecido")
 public class Servico {
 
@@ -24,6 +28,14 @@ public class Servico {
 
     @Schema(example = "60")
     private Integer tempoMedio;
+
+    @ManyToMany
+    @JoinTable(
+            name = "sala_servico",
+            joinColumns = @JoinColumn(name = "fkServico"),
+            inverseJoinColumns = @JoinColumn(name = "fkSala")
+    )
+    private List<Sala> salas;
 
     public Long getId() {
         return id;
@@ -64,4 +76,7 @@ public class Servico {
     public void setTempoMedio(Integer tempoMedio) {
         this.tempoMedio = tempoMedio;
     }
+
+    public List<Sala> getSalas() { return salas; }
+
 }

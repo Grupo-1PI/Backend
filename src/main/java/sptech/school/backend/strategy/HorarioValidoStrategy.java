@@ -10,7 +10,7 @@ import sptech.school.backend.exception.RegraNegocioException;
 public class HorarioValidoStrategy implements RegraAgendamentoStrategy {
 
     @Override
-    public void validar(Agendamento agendamento) {
+    public void validar(Agendamento agendamento, Long funcionarioId, Long servicoId, Long ignorarId) {
 
         if (agendamento.getDataHoraInicio() == null || agendamento.getDataHoraFim() == null) {
             throw new RegraNegocioException("Data/hora não pode ser nula");
