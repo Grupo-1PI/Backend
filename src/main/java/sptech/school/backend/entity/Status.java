@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "status")
 @Schema(name = "Status", description = "Representa o status do agendamento")
 public class Status {
 
