@@ -8,9 +8,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
 
 @Entity
 @Table(name = "especialidade")
@@ -28,7 +28,7 @@ public class Especialidade {
             joinColumns = @JoinColumn(name = "fkEspecialidade"),
             inverseJoinColumns = @JoinColumn(name = "fkServico")
     )
-    private List<Servico> servicos;
+    private List<Servico> servicos = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -48,5 +48,9 @@ public class Especialidade {
 
     public List<Servico> getServicos() {
         return servicos;
+    }
+
+    public void setServicos(List<Servico> servicos) {
+        this.servicos = servicos == null ? new ArrayList<>() : new ArrayList<>(servicos);
     }
 }
