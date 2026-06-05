@@ -36,7 +36,7 @@ public class UsuarioCriacaoDto {
     @Schema(description = "Data de nascimento do usuário", example = "2000-05-10")
     private LocalDate dataNascimento;
 
-    @Schema(description = "ID do endereço (fkEndereco). Se omitido, usa o endereço 1 do seed do banco.", example = "1")
+    @Schema(description = "Endereco completo do usuario")
     @Valid
     @NotNull
     private EnderecoDto endereco;
