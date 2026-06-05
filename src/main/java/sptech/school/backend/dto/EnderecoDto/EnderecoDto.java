@@ -1,27 +1,36 @@
 package sptech.school.backend.dto.EnderecoDto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
+@Schema(name = "Endereco", description = "Endereco completo enviado no cadastro de usuario")
 public class EnderecoDto {
 
     @NotBlank
+    @Schema(description = "CEP", example = "01310-100")
     private String cep;
 
     @NotBlank
+    @Schema(description = "Logradouro", example = "Avenida Paulista")
     private String logradouro;
 
     @NotBlank
+    @Schema(description = "Bairro", example = "Bela Vista")
     private String bairro;
 
     @NotBlank
+    @Schema(description = "Cidade", example = "Sao Paulo")
     private String cidade;
 
     @NotBlank
+    @Schema(description = "UF", example = "SP")
     private String uf;
 
     @NotBlank
+    @Schema(description = "Numero", example = "1000")
     private String numero;
 
+    @Schema(description = "Complemento", example = "Apto 42")
     private String complemento;
 
     public String getCep() {
