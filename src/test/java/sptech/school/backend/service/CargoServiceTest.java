@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-public class CargoServiceTest {
+public @DisplayName("Service unitario - CargoService")
+class CargoServiceTest {
 
     @Mock
     private CargoRepository repository;
@@ -39,8 +40,8 @@ public class CargoServiceTest {
     @DisplayName("Testes de listagem")
     class CargoServiceListarTeste {
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Retornar Lista Vazia Quando Nao Ha Dados | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve retornar uma lista vazia quando não houver dados")
         void deveRetornarListaVaziaQuandoNaoHaDados() {
             List<Cargo> listaVazia = List.of();
 
@@ -52,8 +53,8 @@ public class CargoServiceTest {
             Mockito.verify(repository).findAll();
         }
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Retornar Lista Com Dados Quando Houver Dados | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve retornar lista com dados quando houver dados")
         void deveRetornarListaComDadosQuandoHouverDados() {
             List<Cargo> listaEsperada = List.of(
                     new Cargo(),
@@ -74,8 +75,8 @@ public class CargoServiceTest {
     @DisplayName("Testes de busca por ID")
     class CargoServiceBuscarPorIdTeste {
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Retornar Corretamente | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve retornar cargo quando id existir")
         void deveRetornarCorretamente() {
             Cargo entidade = new Cargo();
             entidade.setId(1L);
@@ -90,8 +91,8 @@ public class CargoServiceTest {
             Mockito.verify(repository).findById(1L);
         }
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Lancar Exception Corretamente | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve lançar exceção quando id não existir")
         void deveLancarExceptionCorretamente() {
             Mockito.when(repository.findById(1L)).thenReturn(Optional.empty());
 
@@ -108,8 +109,8 @@ public class CargoServiceTest {
     @DisplayName("Testes de criação")
     class CargoServiceCriarTeste {
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Criar Cargo Com Permissoes | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve criar cargo com permissões")
         void deveCriarCargoComPermissoes() {
             CargoCriacaoDto dto = criarDto("Administrador", "Acesso total", List.of(1L, 1L, 2L));
             List<Permissao> permissoes = List.of(criarPermissao(1L, "Ver agenda"), criarPermissao(2L, "Editar agenda"));
@@ -126,8 +127,8 @@ public class CargoServiceTest {
             Mockito.verify(repository).save(Mockito.any(Cargo.class));
         }
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Criar Cargo Sem Permissoes Quando Lista For Nula | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve criar cargo sem permissões quando lista for nula")
         void deveCriarCargoSemPermissoesQuandoListaForNula() {
             CargoCriacaoDto dto = criarDto("Recepcionista", "Atendimento", null);
 
@@ -142,8 +143,8 @@ public class CargoServiceTest {
             Mockito.verify(repository).save(Mockito.any(Cargo.class));
         }
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Criar Cargo Sem Permissoes Quando Lista Estiver Vazia | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve criar cargo sem permissões quando lista estiver vazia")
         void deveCriarCargoSemPermissoesQuandoListaEstiverVazia() {
             CargoCriacaoDto dto = criarDto("Auxiliar", "Suporte", List.of());
 
@@ -158,8 +159,8 @@ public class CargoServiceTest {
             Mockito.verify(repository).save(Mockito.any(Cargo.class));
         }
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Lancar Exception Quando Permissao Nao Existir | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve lançar exceção quando alguma permissão não existir")
         void deveLancarExceptionQuandoPermissaoNaoExistir() {
             CargoCriacaoDto dto = criarDto("Administrador", "Acesso total", List.of(1L, 2L));
 
@@ -180,8 +181,8 @@ public class CargoServiceTest {
     @DisplayName("Testes de atualização")
     class CargoServiceAtualizarTeste {
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Atualizar Cargo Existente | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve atualizar cargo existente")
         void deveAtualizarCargoExistente() {
             Cargo cargoExistente = criarCargo(1L, "Antigo", "Descrição antiga");
             CargoCriacaoDto dto = criarDto("Novo", "Descrição nova", List.of(3L));
@@ -202,8 +203,8 @@ public class CargoServiceTest {
             Mockito.verify(repository).save(cargoExistente);
         }
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Lancar Exception Ao Atualizar Cargo Inexistente | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve lançar exceção ao atualizar cargo inexistente")
         void deveLancarExceptionAoAtualizarCargoInexistente() {
             CargoCriacaoDto dto = criarDto("Novo", "Descrição nova", List.of(1L));
 
@@ -219,8 +220,8 @@ public class CargoServiceTest {
             Mockito.verify(repository, Mockito.never()).save(Mockito.any(Cargo.class));
         }
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Lancar Exception Ao Atualizar Com Permissao Inexistente | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve lançar exceção ao atualizar com permissão inexistente")
         void deveLancarExceptionAoAtualizarComPermissaoInexistente() {
             Cargo cargoExistente = criarCargo(1L, "Antigo", "Descrição antiga");
             CargoCriacaoDto dto = criarDto("Novo", "Descrição nova", List.of(1L, 2L));
@@ -244,8 +245,8 @@ public class CargoServiceTest {
     @DisplayName("Testes de deleção")
     class CargoServiceDeletarTeste {
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Deletar Cargo Quando Id Existir | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve deletar cargo quando id existir")
         void deveDeletarCargoQuandoIdExistir() {
             Mockito.when(repository.existsById(1L)).thenReturn(true);
 
@@ -255,8 +256,8 @@ public class CargoServiceTest {
             Mockito.verify(repository).deleteById(1L);
         }
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Lancar Exception Quando Id Nao Existir | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve lançar exceção quando id não existir")
         void deveLancarExceptionQuandoIdNaoExistir() {
             Mockito.when(repository.existsById(1L)).thenReturn(false);
 
@@ -274,8 +275,8 @@ public class CargoServiceTest {
     @DisplayName("Testes dos dados salvos")
     class CargoServiceDadosSalvosTeste {
 
+        @DisplayName("Unidade: CargoService | Cenario: deve Enviar Cargo Preenchido Para Repositorio Ao Criar | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
-        @DisplayName("Deve enviar cargo preenchido para o repositório ao criar")
         void deveEnviarCargoPreenchidoParaRepositorioAoCriar() {
             CargoCriacaoDto dto = criarDto("Gestor", "Gestão da clínica", List.of(1L));
             List<Permissao> permissoes = List.of(criarPermissao(1L, "Gerenciar cargos"));

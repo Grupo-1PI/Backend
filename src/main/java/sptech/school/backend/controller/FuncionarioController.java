@@ -23,7 +23,7 @@ import sptech.school.backend.service.FuncionarioService;
 import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Funcionarios", description = "Operacoes relacionadas aos funcionarios da clinica")
+@Tag(name = "Funcionarios", description = "Cadastro, consulta e manutencao dos funcionarios da clinica")
 @RestController
 @RequestMapping("/funcionarios")
 public class FuncionarioController {
@@ -34,7 +34,7 @@ public class FuncionarioController {
         this.service = service;
     }
 
-    @Operation(summary = "Listar todos os funcionarios")
+    @Operation(summary = "Listar funcionarios", description = "Retorna todos os funcionarios com cargo e especialidades.")
     @ApiResponse(responseCode = "200", description = "Lista de funcionarios retornada com sucesso")
     @GetMapping
     public ResponseEntity<List<FuncionarioResponseDto>> listar() {
@@ -46,7 +46,7 @@ public class FuncionarioController {
         return ResponseEntity.ok(lista);
     }
 
-    @Operation(summary = "Buscar funcionario por id")
+    @Operation(summary = "Buscar funcionario por ID", description = "Retorna um funcionario especifico pelo ID.")
     @ApiResponse(responseCode = "200", description = "Funcionario encontrado")
     @ApiResponse(responseCode = "404", description = "Funcionario nao encontrado")
     @GetMapping("/{id}")
@@ -57,7 +57,7 @@ public class FuncionarioController {
         return ResponseEntity.ok(FuncionarioMapper.toResponse(service.buscarPorId(id)));
     }
 
-    @Operation(summary = "Criar novo funcionario")
+    @Operation(summary = "Criar funcionario", description = "Cria um funcionario com usuario, endereco, cargo e especialidades.")
     @ApiResponse(responseCode = "201", description = "Funcionario criado com sucesso")
     @ApiResponse(responseCode = "404", description = "Cargo ou especialidade nao encontrada")
     @PostMapping
@@ -65,7 +65,7 @@ public class FuncionarioController {
         return ResponseEntity.status(201).body(FuncionarioMapper.toResponse(service.criar(dto)));
     }
 
-    @Operation(summary = "Atualizar funcionario")
+    @Operation(summary = "Atualizar funcionario", description = "Atualiza dados cadastrais, cargo e especialidades do funcionario.")
     @ApiResponse(responseCode = "200", description = "Funcionario atualizado com sucesso")
     @ApiResponse(responseCode = "404", description = "Funcionario, cargo ou especialidade nao encontrada")
     @PutMapping("/{id}")
@@ -77,7 +77,7 @@ public class FuncionarioController {
         return ResponseEntity.ok(FuncionarioMapper.toResponse(service.atualizar(id, dto)));
     }
 
-    @Operation(summary = "Deletar funcionario")
+    @Operation(summary = "Excluir funcionario", description = "Remove um funcionario existente pelo ID.")
     @ApiResponse(responseCode = "204", description = "Funcionario deletado com sucesso")
     @ApiResponse(responseCode = "404", description = "Funcionario nao encontrado")
     @DeleteMapping("/{id}")
