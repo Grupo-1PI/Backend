@@ -14,7 +14,7 @@ import sptech.school.backend.service.CargoService;
 import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "5b. Gerenciamento — Cargos")
+@Tag(name = "Administracao - Cargos", description = "Cadastro e manutencao de cargos e permissoes")
 @RestController
 @RequestMapping("/cargos")
 public class CargoController {
@@ -25,7 +25,7 @@ public class CargoController {
         this.service = service;
     }
 
-    @Operation(summary = "Listar todos os cargos")
+    @Operation(summary = "Listar cargos", description = "Retorna todos os cargos cadastrados com suas permissoes.")
     @ApiResponse(responseCode = "200", description = "Lista de cargos retornada com sucesso")
     @GetMapping
     public ResponseEntity<List<CargoResponseDto>> listar() {
@@ -38,7 +38,7 @@ public class CargoController {
         return ResponseEntity.ok(lista);
     }
 
-    @Operation(summary = "Buscar cargo por ID")
+    @Operation(summary = "Buscar cargo por ID", description = "Retorna um cargo especifico pelo ID.")
     @ApiResponse(responseCode = "200", description = "Cargo retornado com sucesso")
     @ApiResponse(responseCode = "404", description = "Cargo não encontrado")
     @GetMapping("/{id}")
@@ -46,7 +46,7 @@ public class CargoController {
         return ResponseEntity.ok(CargoMapper.toResponse(service.buscarPorId(id)));
     }
 
-    @Operation(summary = "Criar cargo")
+    @Operation(summary = "Criar cargo", description = "Cria um cargo e vincula as permissoes informadas.")
     @ApiResponse(responseCode = "201", description = "Cargo criado com sucesso")
     @ApiResponse(responseCode = "404", description = "Permissão não encontrada")
     @PostMapping
@@ -54,7 +54,7 @@ public class CargoController {
         return ResponseEntity.status(201).body(CargoMapper.toResponse(service.criar(dto)));
     }
 
-    @Operation(summary = "Atualizar cargo")
+    @Operation(summary = "Atualizar cargo", description = "Atualiza dados e permissoes vinculadas a um cargo.")
     @ApiResponse(responseCode = "200", description = "Cargo atualizado com sucesso")
     @ApiResponse(responseCode = "404", description = "Cargo ou permissão não encontrada")
     @PutMapping("/{id}")
@@ -65,7 +65,7 @@ public class CargoController {
         return ResponseEntity.ok(CargoMapper.toResponse(service.atualizar(id, dto)));
     }
 
-    @Operation(summary = "Deletar cargo")
+    @Operation(summary = "Excluir cargo", description = "Remove um cargo existente pelo ID.")
     @ApiResponse(responseCode = "204", description = "Cargo deletado com sucesso")
     @ApiResponse(responseCode = "404", description = "Cargo não encontrado")
     @DeleteMapping("/{id}")

@@ -1,5 +1,6 @@
 package sptech.school.backend.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/disponibilidade")
-@Tag(name = "4. Disponibilidade — Consultas")
+@Tag(name = "Disponibilidade - Consultas", description = "Consulta calendario, horarios e salas disponiveis")
 @SecurityRequirement(name = "bearerAuth")
 public class DisponibilidadeController {
 
@@ -27,17 +28,20 @@ public class DisponibilidadeController {
         this.disponibilidadeService = disponibilidadeService;
     }
 
+    @Operation(summary = "Consultar calendario mensal", description = "Retorna o status de disponibilidade de cada dia do mes informado.")
     @GetMapping("/calendario")
     public ResponseEntity<List<DiaDisponivelDto>> calcularCalendario(@RequestParam String mes) {
         return ResponseEntity.ok(disponibilidadeService.calcularCalendario(mes));
     }
 
+    @Operation(summary = "Consultar horarios disponiveis", description = "Retorna slots disponiveis e ocupados para a data informada.")
     @GetMapping("/horarios")
     public ResponseEntity<List<HorarioDisponivelDto>> calcularHorariosDisponiveis(@RequestParam String data) {
         LocalDate localDate = LocalDate.parse(data);
         return ResponseEntity.ok(disponibilidadeService.calcularHorariosDisponiveis(localDate));
     }
 
+    @Operation(summary = "Consultar disponibilidade das salas", description = "Retorna se cada sala esta ocupada no intervalo informado.")
     @GetMapping("/salas")
     public ResponseEntity<List<SalaDisponibilidadeDto>> verificarDisponibilidadeSalas(
             @RequestParam String inicio,

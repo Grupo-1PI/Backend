@@ -1,5 +1,6 @@
     package sptech.school.backend.entity;
 
+    import com.fasterxml.jackson.annotation.JsonIgnore;
     import io.swagger.v3.oas.annotations.media.Schema;
     import jakarta.persistence.*;
     import java.time.LocalDate;
@@ -19,6 +20,7 @@
 
         private String telefone;
         private String email;
+        @JsonIgnore
         private String senha;
 
         @Schema(example = "2000-05-10")

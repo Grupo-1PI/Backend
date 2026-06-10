@@ -1,5 +1,8 @@
 package sptech.school.backend.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +15,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/clientes")
+@Tag(name = "Clientes", description = "Consulta de clientes cadastrados")
+@SecurityRequirement(name = "bearerAuth")
 public class ClienteController {
 
     private final ClienteService clienteService;
@@ -20,6 +25,7 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
+    @Operation(summary = "Listar clientes", description = "Retorna todos os clientes cadastrados.")
     @GetMapping
     public ResponseEntity<List<ClienteResponseDto>> listar() {
         return ResponseEntity.ok(
@@ -30,6 +36,7 @@ public class ClienteController {
         );
     }
 
+    @Operation(summary = "Buscar cliente por ID", description = "Retorna os dados de um cliente especifico.")
     @GetMapping("/{id}")
     public ResponseEntity<ClienteResponseDto> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(ClienteMapper.toResponse(clienteService.buscarPorId(id)));

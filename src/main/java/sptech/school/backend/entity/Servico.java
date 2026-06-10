@@ -3,6 +3,7 @@ package sptech.school.backend.entity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +36,7 @@ public class Servico {
             joinColumns = @JoinColumn(name = "fkServico"),
             inverseJoinColumns = @JoinColumn(name = "fkSala")
     )
-    private List<Sala> salas;
+    private List<Sala> salas = new ArrayList<>();
 
     public Long getId() {
         return id;
