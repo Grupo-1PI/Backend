@@ -14,6 +14,7 @@ import sptech.school.backend.service.CargoService;
 import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
+
 @Tag(name = "Administracao - Cargos", description = "Cadastro e manutencao de cargos e permissoes")
 @RestController
 @RequestMapping("/cargos")

@@ -14,6 +14,7 @@ import sptech.school.backend.service.EspecialidadeService;
 import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
+
 @Tag(name = "Administracao - Especialidades", description = "Cadastro e manutencao de especialidades e servicos vinculados")
 @RestController
 @RequestMapping("/especialidades")

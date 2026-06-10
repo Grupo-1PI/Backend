@@ -45,6 +45,7 @@ public class AgendaFuncionarioController {
         return ResponseEntity.ok(service.listarPorFuncionario(funcionarioId));
     }
 
+
     @Operation(summary = "Criar agenda semanal", description = "Cria uma faixa de trabalho semanal para um funcionario.")
     @PostMapping
     public ResponseEntity<AgendaFuncionario> criar(@Valid @RequestBody AgendaFuncionarioDto dto) {

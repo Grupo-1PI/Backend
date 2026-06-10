@@ -1,5 +1,6 @@
 package sptech.school.backend.controller;
 
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,6 +46,7 @@ public class DashboardController {
                 dashboardService.quantidadeServicosUltimosDias(inicio, fim)
         );
     }
+
 
     @Operation(summary = "Agendamentos por dia da semana", description = "Retorna a distribuicao de agendamentos por dia da semana.")
     @GetMapping("/agendamentos-dia-semana")

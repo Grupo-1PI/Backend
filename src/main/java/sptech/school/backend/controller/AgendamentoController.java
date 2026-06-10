@@ -98,6 +98,7 @@ public class AgendamentoController {
         return ResponseEntity.ok(toResponseList(agendamentos));
     }
 
+
     @Operation(summary = "Buscar agendamento por ID", description = "Retorna um agendamento especifico pelo ID.")
     @ApiResponse(responseCode = "200", description = "Agendamento encontrado")
     @ApiResponse(responseCode = "404", description = "Agendamento nao encontrado")
