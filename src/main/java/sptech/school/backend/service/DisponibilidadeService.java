@@ -18,7 +18,9 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -77,8 +79,15 @@ public class DisponibilidadeService {
                 .filter(agenda -> Objects.equals(agenda.getDiaSemana(), diaSemana))
                 .forEach(agenda -> adicionarHorariosDaFaixa(data, agenda, horarios));
 
-        horarios.sort(Comparator.comparing(HorarioDisponivelDto::getHorario));
-        return horarios;
+        Map<String, HorarioDisponivelDto> mapa = new LinkedHashMap<>();
+        for (HorarioDisponivelDto h : horarios) {
+            mapa.merge(h.getHorario(), h, (existente, novo) ->
+                    Boolean.FALSE.equals(novo.isDisponivel()) ? novo : existente
+            );
+        }
+        List<HorarioDisponivelDto> horariosDeduplicados = new ArrayList<>(mapa.values());
+        horariosDeduplicados.sort(Comparator.comparing(HorarioDisponivelDto::getHorario));
+        return horariosDeduplicados;
     }
 
     @Transactional(readOnly = true)

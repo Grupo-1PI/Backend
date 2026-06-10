@@ -1,6 +1,7 @@
 package sptech.school.backend.controller;
 
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/salas")
-@Tag(name = "5d. Gerenciamento — Salas")
+@Tag(name = "Administracao - Salas", description = "Cadastro e manutencao de salas de atendimento")
 @SecurityRequirement(name = "bearerAuth")
 public class SalaController {
 
@@ -25,6 +26,7 @@ public class SalaController {
         this.salaService = salaService;
     }
 
+    @Operation(summary = "Listar salas", description = "Retorna todas as salas cadastradas.")
     @GetMapping
     public ResponseEntity<List<SalaResponseDto>> listar() {
 
@@ -36,6 +38,7 @@ public class SalaController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Buscar sala por ID", description = "Retorna uma sala especifica pelo ID.")
     @GetMapping("/{id}")
     public ResponseEntity<SalaResponseDto> buscarPorId(
             @PathVariable Long id) {
@@ -45,6 +48,7 @@ public class SalaController {
         return ResponseEntity.ok(toResponseDto(sala));
     }
 
+    @Operation(summary = "Criar sala", description = "Cria uma nova sala de atendimento.")
     @PostMapping
     public ResponseEntity<SalaResponseDto> criar(
             @RequestBody SalaCriacaoDto dto) {
@@ -58,6 +62,7 @@ public class SalaController {
                 .body(response);
     }
 
+    @Operation(summary = "Atualizar sala", description = "Atualiza a descricao de uma sala existente.")
     @PutMapping("/{id}")
     public ResponseEntity<SalaResponseDto> atualizar(
             @PathVariable Long id,
@@ -68,6 +73,7 @@ public class SalaController {
         return ResponseEntity.ok(toResponseDto(sala));
     }
 
+    @Operation(summary = "Excluir sala", description = "Remove uma sala existente pelo ID.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(
             @PathVariable Long id) {

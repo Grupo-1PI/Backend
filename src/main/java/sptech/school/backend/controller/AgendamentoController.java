@@ -26,7 +26,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Tag(name = "Agendamentos")
+@Tag(name = "Agendamentos", description = "Criacao, consulta e manutencao de agendamentos")
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/agendamentos")
@@ -38,7 +38,7 @@ public class AgendamentoController {
         this.service = service;
     }
 
-    @Operation(summary = "Criar agendamento")
+    @Operation(summary = "Criar agendamento", description = "Cria um agendamento vinculando cliente, funcionario, sala, servico e status.")
     @ApiResponse(responseCode = "201", description = "Criado com sucesso")
     @ApiResponse(responseCode = "400", description = "Regra de negocio invalida")
     @ApiResponse(responseCode = "404", description = "Recurso nao encontrado")
@@ -60,7 +60,7 @@ public class AgendamentoController {
                 .body(AgendamentoMapper.toResponse(salvo));
     }
 
-    @Operation(summary = "Listar agendamentos")
+    @Operation(summary = "Listar agendamentos", description = "Lista agendamentos, com filtros opcionais por periodo e status.")
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     @GetMapping
     public ResponseEntity<List<AgendamentoResponseDto>> listar(
@@ -98,7 +98,8 @@ public class AgendamentoController {
         return ResponseEntity.ok(toResponseList(agendamentos));
     }
 
-    @Operation(summary = "Buscar agendamento por id")
+
+    @Operation(summary = "Buscar agendamento por ID", description = "Retorna um agendamento especifico pelo ID.")
     @ApiResponse(responseCode = "200", description = "Agendamento encontrado")
     @ApiResponse(responseCode = "404", description = "Agendamento nao encontrado")
     @GetMapping("/{id}")
@@ -106,14 +107,14 @@ public class AgendamentoController {
         return ResponseEntity.ok(AgendamentoMapper.toResponse(service.buscarPorId(id)));
     }
 
-    @Operation(summary = "Listar agendamentos do cliente")
+    @Operation(summary = "Listar agendamentos do cliente", description = "Retorna agendamentos vinculados ao cliente informado.")
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     @GetMapping("/meus/{clienteId}")
     public ResponseEntity<List<AgendamentoResponseDto>> listarPorCliente(@PathVariable Long clienteId) {
         return ResponseEntity.ok(toResponseList(service.listarPorCliente(clienteId)));
     }
 
-    @Operation(summary = "Atualizar agendamento")
+    @Operation(summary = "Atualizar agendamento", description = "Atualiza dados e vinculos de um agendamento existente.")
     @ApiResponse(responseCode = "200", description = "Atualizado com sucesso")
     @ApiResponse(responseCode = "400", description = "Regra invalida")
     @ApiResponse(responseCode = "404", description = "Nao encontrado")
@@ -136,7 +137,7 @@ public class AgendamentoController {
         return ResponseEntity.ok(AgendamentoMapper.toResponse(atualizado));
     }
 
-    @Operation(summary = "Deletar agendamento")
+    @Operation(summary = "Excluir agendamento", description = "Remove um agendamento existente pelo ID.")
     @ApiResponse(responseCode = "204", description = "Deletado com sucesso")
     @ApiResponse(responseCode = "404", description = "Nao encontrado")
     @DeleteMapping("/{id}")
