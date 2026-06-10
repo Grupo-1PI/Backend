@@ -14,7 +14,8 @@ import sptech.school.backend.service.EspecialidadeService;
 import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "5c. Gerenciamento - Especialidades")
+
+@Tag(name = "Administracao - Especialidades", description = "Cadastro e manutencao de especialidades e servicos vinculados")
 @RestController
 @RequestMapping("/especialidades")
 public class EspecialidadeController {
@@ -25,7 +26,7 @@ public class EspecialidadeController {
         this.service = service;
     }
 
-    @Operation(summary = "Listar todas as especialidades")
+    @Operation(summary = "Listar especialidades", description = "Retorna todas as especialidades cadastradas com seus servicos.")
     @ApiResponse(responseCode = "200", description = "Lista de especialidades retornada com sucesso")
     @GetMapping
     public ResponseEntity<List<EspecialidadeResponseDto>> listar() {
@@ -37,7 +38,7 @@ public class EspecialidadeController {
         return ResponseEntity.ok(lista);
     }
 
-    @Operation(summary = "Buscar especialidade por ID")
+    @Operation(summary = "Buscar especialidade por ID", description = "Retorna uma especialidade especifica pelo ID.")
     @ApiResponse(responseCode = "200", description = "Especialidade retornada com sucesso")
     @ApiResponse(responseCode = "404", description = "Especialidade nao encontrada")
     @GetMapping("/{id}")
@@ -45,7 +46,7 @@ public class EspecialidadeController {
         return ResponseEntity.ok(EspecialidadeMapper.toResponse(service.buscarPorId(id)));
     }
 
-    @Operation(summary = "Criar especialidade")
+    @Operation(summary = "Criar especialidade", description = "Cria uma especialidade e vincula os servicos informados.")
     @ApiResponse(responseCode = "201", description = "Especialidade criada com sucesso")
     @ApiResponse(responseCode = "404", description = "Servico nao encontrado")
     @PostMapping
@@ -53,7 +54,7 @@ public class EspecialidadeController {
         return ResponseEntity.status(201).body(EspecialidadeMapper.toResponse(service.criar(dto)));
     }
 
-    @Operation(summary = "Atualizar especialidade")
+    @Operation(summary = "Atualizar especialidade", description = "Atualiza dados e servicos vinculados a uma especialidade.")
     @ApiResponse(responseCode = "200", description = "Especialidade atualizada com sucesso")
     @ApiResponse(responseCode = "404", description = "Especialidade ou servico nao encontrado")
     @PutMapping("/{id}")
@@ -64,7 +65,7 @@ public class EspecialidadeController {
         return ResponseEntity.ok(EspecialidadeMapper.toResponse(service.atualizar(id, dto)));
     }
 
-    @Operation(summary = "Deletar especialidade")
+    @Operation(summary = "Excluir especialidade", description = "Remove uma especialidade existente pelo ID.")
     @ApiResponse(responseCode = "204", description = "Especialidade deletada com sucesso")
     @ApiResponse(responseCode = "404", description = "Especialidade nao encontrada")
     @DeleteMapping("/{id}")

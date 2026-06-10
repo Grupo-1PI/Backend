@@ -14,7 +14,7 @@ import sptech.school.backend.dto.UsuarioDto.UsuarioLoginDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioTokenDto;
 import sptech.school.backend.service.UsuarioService;
 
-@Tag(name = "Usuários")
+@Tag(name = "Autenticacao e Usuarios", description = "Cadastro, login e logout de usuarios")
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
@@ -25,9 +25,9 @@ public class UsuarioController {
         this.service = service;
     }
 
-    @Operation(summary = "Criar usuário")
-    @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso")
-    @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    @Operation(summary = "Criar usuario", description = "Cria um novo usuario com dados pessoais e endereco.")
+    @ApiResponse(responseCode = "201", description = "Usuario criado com sucesso")
+    @ApiResponse(responseCode = "400", description = "Dados invalidos")
     @PostMapping
     public ResponseEntity<Void> criar(@Valid @RequestBody UsuarioCriacaoDto dto) {
 
@@ -35,9 +35,9 @@ public class UsuarioController {
         return ResponseEntity.status(201).build();
     }
 
-    @Operation(summary = "Login do usuário")
+    @Operation(summary = "Login do usuario", description = "Autentica credenciais e retorna token JWT no corpo e em cookie HTTP-only.")
     @ApiResponse(responseCode = "200", description = "Login realizado com sucesso")
-    @ApiResponse(responseCode = "400", description = "Credenciais inválidas")
+    @ApiResponse(responseCode = "400", description = "Credenciais invalidas")
     @PostMapping("/login")
     public ResponseEntity<UsuarioTokenDto> login(
             @Valid @RequestBody UsuarioLoginDto dto,
@@ -55,7 +55,7 @@ public class UsuarioController {
         return ResponseEntity.ok(tokenDto);
     }
 
-    @Operation(summary = "Logout do usuário")
+    @Operation(summary = "Logout do usuario", description = "Remove o cookie de autenticacao do usuario.")
     @ApiResponse(responseCode = "200", description = "Logout realizado com sucesso")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
