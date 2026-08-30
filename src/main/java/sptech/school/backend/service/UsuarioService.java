@@ -24,10 +24,15 @@ import sptech.school.backend.repository.ClienteRepository;
 import sptech.school.backend.repository.EnderecoRepository;
 import sptech.school.backend.repository.FuncionarioRepository;
 import sptech.school.backend.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.AuthenticationException;
 
 @Service
 public class UsuarioService {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(UsuarioService.class);
     private final PasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
     private final EnderecoRepository enderecoRepository;
@@ -76,7 +81,25 @@ public class UsuarioService {
         UsernamePasswordAuthenticationToken credentials =
                 new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha());
 
-        Authentication authentication = authenticationManager.authenticate(credentials);
+        Authentication authentication;
+
+        try {
+            authentication = authenticationManager.authenticate(credentials);
+
+            LOGGER.info(
+                    "[AUTENTICACAO] Login realizado com sucesso - usuario={}",
+                    dto.getEmail()
+            );
+
+        } catch (AuthenticationException e) {
+
+            LOGGER.warn(
+                    "[AUTENTICACAO] Falha de autenticacao - usuario={}",
+                    dto.getEmail()
+            );
+
+            throw e;
+        }
 
         Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario nao encontrado"));
