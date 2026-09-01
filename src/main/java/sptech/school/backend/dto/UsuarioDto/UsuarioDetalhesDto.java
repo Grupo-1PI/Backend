@@ -2,25 +2,30 @@ package sptech.school.backend.dto.UsuarioDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import sptech.school.backend.entity.Usuario;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 @Schema(name = "Usuario - Detalhes", description = "Dados detalhados do usuário para contexto de segurança e sessão")
 public class UsuarioDetalhesDto implements UserDetails {
 
     @Schema(description = "Nome do usuário", example = "Fernanda Henckel")
     private final Usuario usuario;
+    private final Collection<? extends GrantedAuthority> authorities;
 
-    public UsuarioDetalhesDto(Usuario usuario) {
+    public UsuarioDetalhesDto(Usuario usuario, Collection<String> permissoes) {
         this.usuario = usuario;
+        this.authorities = permissoes.stream()
+                .map(SimpleGrantedAuthority::new)
+                .toList();
     }
 
     @Schema(hidden = true)
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return authorities;
     }
 
     @Schema(hidden = true)

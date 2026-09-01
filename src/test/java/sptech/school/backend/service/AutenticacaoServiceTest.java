@@ -11,8 +11,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import sptech.school.backend.entity.Usuario;
+import sptech.school.backend.entity.Funcionario;
+import sptech.school.backend.entity.Cargo;
+import sptech.school.backend.entity.Permissao;
+import sptech.school.backend.repository.FuncionarioRepository;
 import sptech.school.backend.repository.UsuarioRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,6 +26,9 @@ class AutenticacaoServiceTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private FuncionarioRepository funcionarioRepository;
 
     @InjectMocks
     private AutenticacaoService service;
@@ -39,6 +47,31 @@ class AutenticacaoServiceTest {
         Assertions.assertEquals("usuario@email.com", resultado.getUsername());
         Assertions.assertEquals("hash", resultado.getPassword());
         Assertions.assertTrue(resultado.isEnabled());
+    }
+
+    @DisplayName("Unidade: AutenticacaoService | Cenario: usuario funcionario | Dados: permissao do cargo | Verifica: deve carregar authority")
+    @Test
+    void loadUserByUsername_deveCarregarPermissoesDoCargo() {
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setEmail("admin@email.com");
+        usuario.setSenha("hash");
+        usuario.setAtivo(true);
+
+        Permissao permissao = new Permissao();
+        permissao.setNome("CRUD_AGENDAMENTO");
+        Cargo cargo = new Cargo();
+        cargo.setPermissoes(List.of(permissao));
+        Funcionario funcionario = new Funcionario();
+        funcionario.setCargo(cargo);
+
+        Mockito.when(usuarioRepository.findByEmail("admin@email.com")).thenReturn(Optional.of(usuario));
+        Mockito.when(funcionarioRepository.findByUsuarioId(1L)).thenReturn(Optional.of(funcionario));
+
+        UserDetails resultado = service.loadUserByUsername("admin@email.com");
+
+        Assertions.assertTrue(resultado.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("CRUD_AGENDAMENTO")));
     }
 
     @DisplayName("Unidade: AutenticacaoService | Cenario: load user by username | Dados: quando usuario nao existe | Verifica: deve lancar")
