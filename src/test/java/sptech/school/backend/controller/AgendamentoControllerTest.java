@@ -26,6 +26,7 @@ import sptech.school.backend.entity.Usuario;
 import sptech.school.backend.exception.ConflitoException;
 import sptech.school.backend.exception.RecursoNaoEncontradoException;
 import sptech.school.backend.service.AgendamentoService;
+import sptech.school.backend.service.ClienteService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,6 +59,9 @@ class AgendamentoControllerTest {
 
     @Mock
     private AgendamentoService agendamentoService;
+
+    @Mock
+    private ClienteService clienteService;
 
     @DisplayName("Unidade: AgendamentoController | Cenario: get agendamentos | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200")
     @Test
@@ -137,9 +141,12 @@ class AgendamentoControllerTest {
     @DisplayName("Unidade: AgendamentoController | Cenario: get meus agendamentos | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200")
     @Test
     void getMeusAgendamentos_deveRetornar200() throws Exception {
+        Cliente cliente = new Cliente();
+        cliente.setId(1L);
+        Mockito.when(clienteService.buscarPorEmailUsuario("cliente@email.com")).thenReturn(cliente);
         Mockito.when(agendamentoService.listarPorCliente(1L)).thenReturn(List.of(agendamento(1L)));
 
-        mockMvc.perform(get("/agendamentos/meus/1"))
+        mockMvc.perform(get("/agendamentos/meus").principal(() -> "cliente@email.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1));
     }

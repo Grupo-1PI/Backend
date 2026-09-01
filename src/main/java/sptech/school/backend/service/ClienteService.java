@@ -23,4 +23,9 @@ public class ClienteService {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente nao encontrado"));
     }
+
+    public Cliente buscarPorEmailUsuario(String email) {
+        return clienteRepository.findByUsuarioEmail(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente nao encontrado"));
+    }
 }

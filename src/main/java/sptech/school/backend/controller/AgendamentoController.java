@@ -22,7 +22,9 @@ import sptech.school.backend.dto.AgendamentoDto.AgendamentoResponseDto;
 import sptech.school.backend.entity.Agendamento;
 import sptech.school.backend.mapper.AgendamentoMapper;
 import sptech.school.backend.service.AgendamentoService;
+import sptech.school.backend.service.ClienteService;
 import java.net.URI;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,9 +35,11 @@ import java.util.List;
 public class AgendamentoController {
 
     private final AgendamentoService service;
+    private final ClienteService clienteService;
 
-    public AgendamentoController(AgendamentoService service) {
+    public AgendamentoController(AgendamentoService service, ClienteService clienteService) {
         this.service = service;
+        this.clienteService = clienteService;
     }
 
     @Operation(summary = "Criar agendamento", description = "Cria um agendamento vinculando cliente, funcionario, sala, servico e status.")
@@ -107,10 +111,11 @@ public class AgendamentoController {
         return ResponseEntity.ok(AgendamentoMapper.toResponse(service.buscarPorId(id)));
     }
 
-    @Operation(summary = "Listar agendamentos do cliente", description = "Retorna agendamentos vinculados ao cliente informado.")
+    @Operation(summary = "Listar meus agendamentos", description = "Retorna apenas os agendamentos vinculados ao cliente autenticado.")
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
-    @GetMapping("/meus/{clienteId}")
-    public ResponseEntity<List<AgendamentoResponseDto>> listarPorCliente(@PathVariable Long clienteId) {
+    @GetMapping("/meus")
+    public ResponseEntity<List<AgendamentoResponseDto>> listarMeus(Principal principal) {
+        Long clienteId = clienteService.buscarPorEmailUsuario(principal.getName()).getId();
         return ResponseEntity.ok(toResponseList(service.listarPorCliente(clienteId)));
     }
 
