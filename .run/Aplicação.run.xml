@@ -1,0 +1,20 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Aplicação" type="Application" factoryName="Application">
+    <envs>
+      <env name="DB_PASSWORD" value="813813" />
+      <env name="DB_URL" value="jdbc:mysql://localhost:3306/taotenshin" />
+      <env name="DB_USERNAME" value="root" />
+      <env name="JPA_DDL_AUTO" value="none" />
+      <env name="JWT_SECRET" value="RXhpc3RlIHVtYSB0ZW9yaWEgcXVlIGRpeiBxdWUsIHNlIHVtIGRpYSBhbGd16W0gZGVzY29icmlyIGV4YXRhbWVudGUgcGFyYSBxdWUgc2VydmUgbyBVbml2ZXJzbyBlIHBvciBxdWUgZWxlIGVzdOEgYXF1aSwgZWxlIGRlc2FwYXJlY2Vy4SBpbnN0YW5lYW1lbnRlIGUgc2Vy4SBzdWJzdGl0de1kbyBwb3IgYWxnbyBhaW5kYSBtYWlzIGVzdHJhbmhvIGUgaW5leHBsaWPhdmVsLiBFeGlzdGUgdW1hIHNlZ3VuZGEgdGVvcmlhIHF1ZSBkaXogcXVlIGlzc28gauEgYWNvbnRlY2V1Li4u" />
+      <env name="JWT_VALIDITY" value="3600" />
+      <env name="SERVER_PORT" value="8080" />
+      <env name="SPRING_APPLICATION_NAME" value="clinica-acupuntura" />
+      <env name="SQL_INIT_MODE" value="never" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="sptech.school.backend.BackendApplication" />
+    <module name="Backend" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
