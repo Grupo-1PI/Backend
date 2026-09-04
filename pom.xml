@@ -145,7 +145,7 @@
 				<configuration>
 					<failBuildOnCVSS>7</failBuildOnCVSS>
 					<!-- API key do NVD via variável de ambiente no CI -->
-					<nvdApiKey>10A0C58B-B1A8-F111-8373-0EBF96DE670D</nvdApiKey>
+					<nvdApiKey>5AD89F2E-5E45-46CF-AE7C-3443A05EF262</nvdApiKey>
 					<formats>
 						<format>HTML</format>
 						<format>JSON</format>
