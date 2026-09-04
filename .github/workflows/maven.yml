@@ -20,8 +20,32 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Cache Dependency-Check DB
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: dependency-check-data-${{ runner.os }}
+          restore-keys: dependency-check-data-
+
       - name: Build and run tests
         run: mvn clean verify
+        env:
+          NVD_API_KEY: 10A0C58B-B1A8-F111-8373-0EBF96DE670D
 
       - name: Upload dependency graph
         uses: advanced-security/maven-dependency-submission-action@v5
+        if: always()
+
+      - name: Upload Dependency-Check report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-check-report
+          path: target/dependency-check-report.*
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: software-bill-of-materials
+          path: target/*.json
