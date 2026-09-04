@@ -20,6 +20,8 @@
 		<java.version>21</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<tomcat.version>10.1.56</tomcat.version>
+		<log4j2.version>2.26.1</log4j2.version>
 	</properties>
 
 	<dependencies>
@@ -146,6 +148,7 @@
 					<failBuildOnCVSS>7</failBuildOnCVSS>
 					<!-- API key do NVD via variável de ambiente no CI -->
 					<nvdApiKey>5AD89F2E-5E45-46CF-AE7C-3443A05EF262</nvdApiKey>
+					<suppressionFile>dependency-check-suppressions.xml</suppressionFile>
 					<formats>
 						<format>HTML</format>
 						<format>JSON</format>
