@@ -38,7 +38,7 @@ class AutenticacaoServiceTest {
         usuario.setAtivo(true);
         usuario.setId(1L);
         Mockito.when(usuarioRepository.findByEmail("usuario@email.com")).thenReturn(Optional.of(usuario));
-        Mockito.when(funcionarioRepository.findByUsuarioId(1L)).thenReturn(Optional.empty());
+        Mockito.lenient().when(funcionarioRepository.findByUsuarioId(1L)).thenReturn(Optional.empty());
 
         UserDetails resultado = service.loadUserByUsername("usuario@email.com");
 
