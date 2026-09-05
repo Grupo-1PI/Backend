@@ -36,7 +36,7 @@
 
     <suppress>
         <notes>Sem patch mais novo que 10.1.57 disponivel; revisar periodicamente</notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-core@.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-.*@.*$</packageUrl>
         <cve>CVE-2026-65637</cve>
         <cve>CVE-2026-65905</cve>
         <cve>CVE-2026-59083</cve>
