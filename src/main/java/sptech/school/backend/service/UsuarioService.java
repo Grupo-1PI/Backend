@@ -40,6 +40,7 @@ public class UsuarioService {
     private final FuncionarioRepository funcionarioRepository;
     private final GerenciadorTokenJwt gerenciadorTokenJwt;
     private final AuthenticationManager authenticationManager;
+    private final LimiteTentativasLogin limiteTentativasLogin;
 
     public UsuarioService(
             PasswordEncoder passwordEncoder,
@@ -48,7 +49,8 @@ public class UsuarioService {
             ClienteRepository clienteRepository,
             FuncionarioRepository funcionarioRepository,
             GerenciadorTokenJwt gerenciadorTokenJwt,
-            AuthenticationManager authenticationManager
+            AuthenticationManager authenticationManager,
+            LimiteTentativasLogin limiteTentativasLogin
     ) {
         this.passwordEncoder = passwordEncoder;
         this.usuarioRepository = usuarioRepository;
@@ -57,6 +59,7 @@ public class UsuarioService {
         this.funcionarioRepository = funcionarioRepository;
         this.gerenciadorTokenJwt = gerenciadorTokenJwt;
         this.authenticationManager = authenticationManager;
+        this.limiteTentativasLogin = limiteTentativasLogin;
     }
 
     @Transactional
@@ -78,6 +81,8 @@ public class UsuarioService {
     }
 
     public UsuarioTokenDto login(UsuarioLoginDto dto) {
+        limiteTentativasLogin.verificar(dto.getEmail());
+
         UsernamePasswordAuthenticationToken credentials =
                 new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha());
 
@@ -93,6 +98,8 @@ public class UsuarioService {
 
         } catch (AuthenticationException e) {
 
+            limiteTentativasLogin.registrarFalha(dto.getEmail());
+
             LOGGER.warn(
                     "[AUTENTICACAO] Falha de autenticacao - usuario={}",
                     dto.getEmail()
@@ -100,6 +107,8 @@ public class UsuarioService {
 
             throw e;
         }
+
+        limiteTentativasLogin.limpar(dto.getEmail());
 
         Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario nao encontrado"));
