@@ -47,6 +47,7 @@ public class UsuarioController {
 
         Cookie cookie = new Cookie(COOKIE_NOME, tokenDto.getToken());
         cookie.setHttpOnly(true);
+        cookie.setAttribute("SameSite", "Lax");
         cookie.setPath("/");
         cookie.setMaxAge(60 * 60);
 
@@ -62,6 +63,7 @@ public class UsuarioController {
 
         Cookie cookie = new Cookie(COOKIE_NOME, null);
         cookie.setHttpOnly(true);
+        cookie.setAttribute("SameSite", "Lax");
         cookie.setPath("/");
         cookie.setMaxAge(0);
 
