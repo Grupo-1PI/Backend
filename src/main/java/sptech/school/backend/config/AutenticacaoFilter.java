@@ -150,7 +150,6 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
         return path.startsWith("/docs") ||
                 path.startsWith("/v3/api-docs") ||
                 path.startsWith("/swagger-ui") ||
-                path.startsWith("/h2-console") ||
                 path.startsWith("/usuarios/login") ||
                 path.startsWith("/error");
     }

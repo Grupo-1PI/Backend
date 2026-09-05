@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +46,7 @@ public class AgendamentoController {
     @ApiResponse(responseCode = "404", description = "Recurso nao encontrado")
     @ApiResponse(responseCode = "409", description = "Conflito de horario")
     @PostMapping
+    @PreAuthorize("hasAuthority('CRUD_AGENDAMENTO')")
     public ResponseEntity<AgendamentoResponseDto> criar(@RequestBody AgendamentoRequestDto dto) {
         Agendamento agendamento = toEntity(dto);
 
@@ -63,6 +66,7 @@ public class AgendamentoController {
     @Operation(summary = "Listar agendamentos", description = "Lista agendamentos, com filtros opcionais por periodo e status.")
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
     public ResponseEntity<List<AgendamentoResponseDto>> listar(
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -103,6 +107,7 @@ public class AgendamentoController {
     @ApiResponse(responseCode = "200", description = "Agendamento encontrado")
     @ApiResponse(responseCode = "404", description = "Agendamento nao encontrado")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
     public ResponseEntity<AgendamentoResponseDto> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(AgendamentoMapper.toResponse(service.buscarPorId(id)));
     }
@@ -110,7 +115,18 @@ public class AgendamentoController {
     @Operation(summary = "Listar agendamentos do cliente", description = "Retorna agendamentos vinculados ao cliente informado.")
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     @GetMapping("/meus/{clienteId}")
-    public ResponseEntity<List<AgendamentoResponseDto>> listarPorCliente(@PathVariable Long clienteId) {
+    @PreAuthorize("hasAnyAuthority('CLIENTE', 'CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
+    public ResponseEntity<List<AgendamentoResponseDto>> listarPorCliente(
+            @PathVariable Long clienteId,
+            Authentication authentication
+    ) {
+        if (authentication != null
+                && !authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("CRUD_AGENDAMENTO"))
+                && !service.clientePertenceAoUsuario(clienteId, authentication.getName())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado");
+        }
+
         return ResponseEntity.ok(toResponseList(service.listarPorCliente(clienteId)));
     }
 
@@ -120,6 +136,7 @@ public class AgendamentoController {
     @ApiResponse(responseCode = "404", description = "Nao encontrado")
     @ApiResponse(responseCode = "409", description = "Conflito de horario")
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('CRUD_AGENDAMENTO')")
     public ResponseEntity<AgendamentoResponseDto> atualizar(
             @PathVariable Long id,
             @RequestBody AgendamentoRequestDto dto
@@ -141,6 +158,7 @@ public class AgendamentoController {
     @ApiResponse(responseCode = "204", description = "Deletado com sucesso")
     @ApiResponse(responseCode = "404", description = "Nao encontrado")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('CRUD_AGENDAMENTO')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);
         return ResponseEntity.noContent().build();
