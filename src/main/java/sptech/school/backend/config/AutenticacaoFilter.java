@@ -1,6 +1,7 @@
 package sptech.school.backend.config;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SecurityException;
@@ -13,12 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-import sptech.school.backend.service.AutenticacaoService;
 import static sptech.school.backend.config.SecurityConstants.COOKIE_NOME;
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Filtro de autenticação JWT que intercepta todas as requisições HTTP recebidas pela API.
@@ -42,7 +43,7 @@ import java.io.IOException;
  *     ↓ 1. Tenta extrair token do cookie "authToken"
  *     ↓ 2. Se não encontrar, tenta header "Authorization: Bearer"
  *     ↓ 3. JJWT valida assinatura e expiração
- *     ↓ 4. Carrega UserDetails do banco e registra autenticação no SecurityContext
+ *     ↓ 4. Extrai authorities do JWT assinado e registra autenticação no SecurityContext
  *     ↓ 5. Continua para os próximos filtros do Spring Security
  * </pre>
  */
@@ -50,11 +51,9 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AutenticacaoFilter.class);
 
-    private final AutenticacaoService autenticacaoService;
     private final GerenciadorTokenJwt jwtTokenManager;
 
-    public AutenticacaoFilter(AutenticacaoService autenticacaoService, GerenciadorTokenJwt jwtTokenManager) {
-        this.autenticacaoService = autenticacaoService;
+    public AutenticacaoFilter(GerenciadorTokenJwt jwtTokenManager) {
         this.jwtTokenManager = jwtTokenManager;
     }
 
@@ -63,11 +62,14 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String username = null;
+        Collection<? extends GrantedAuthority> authorities = null;
         String jwtToken = extrairToken(request);
 
         if (jwtToken != null) {
             try {
-                username = jwtTokenManager.getUsernameFromToken(jwtToken);
+                Claims claims = jwtTokenManager.getClaimsFromToken(jwtToken);
+                username = claims.getSubject();
+                authorities = jwtTokenManager.getAuthoritiesFromClaims(claims);
 
             } catch (ExpiredJwtException e) {
                 LOGGER.warn("[AUTENTICACAO] Token expirado para o usuário '{}': {}",
@@ -87,8 +89,9 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
             }
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            registrarAutenticacaoNoContexto(request, username, jwtToken);
+        if (username != null && authorities != null
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
+            registrarAutenticacaoNoContexto(request, username, authorities);
         }
 
         filterChain.doFilter(request, response);
@@ -131,16 +134,16 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
      * Valida o token JWT e, se válido, registra o usuário autenticado no
      * {@link SecurityContextHolder} da thread atual.
      */
-    private void registrarAutenticacaoNoContexto(HttpServletRequest request, String username, String jwtToken) {
-        UserDetails userDetails = autenticacaoService.loadUserByUsername(username);
+    private void registrarAutenticacaoNoContexto(
+            HttpServletRequest request,
+            String username,
+            Collection<? extends GrantedAuthority> authorities
+    ) {
+        UsernamePasswordAuthenticationToken autenticacao = new UsernamePasswordAuthenticationToken(
+                username, null, authorities);
 
-        if (jwtTokenManager.validateToken(jwtToken, userDetails)) {
-            UsernamePasswordAuthenticationToken autenticacao = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-
-            autenticacao.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(autenticacao);
-        }
+        autenticacao.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(autenticacao);
     }
 
     @Override
@@ -150,7 +153,6 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
         return path.startsWith("/docs") ||
                 path.startsWith("/v3/api-docs") ||
                 path.startsWith("/swagger-ui") ||
-                path.startsWith("/h2-console") ||
                 path.startsWith("/usuarios/login") ||
                 path.startsWith("/error");
     }

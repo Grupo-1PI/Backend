@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 import sptech.school.backend.dto.FuncionarioDto.FuncionarioAtualizacaoDto;
 import sptech.school.backend.dto.FuncionarioDto.FuncionarioCriacaoDto;
 import sptech.school.backend.dto.FuncionarioDto.FuncionarioResponseDto;
@@ -26,6 +27,7 @@ import java.util.List;
 @Tag(name = "Funcionarios", description = "Cadastro, consulta e manutencao dos funcionarios da clinica")
 @RestController
 @RequestMapping("/funcionarios")
+@PreAuthorize("hasAuthority('CRUD_USUARIO')")
 public class FuncionarioController {
 
     private final FuncionarioService service;

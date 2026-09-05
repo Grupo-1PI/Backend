@@ -57,6 +57,9 @@ class UsuarioServiceTest {
     @Mock
     private AuthenticationManager authenticationManager;
 
+    @Mock
+    private LimiteTentativasLogin limiteTentativasLogin;
+
     @InjectMocks
     private UsuarioService service;
 
