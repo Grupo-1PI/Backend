@@ -160,7 +160,7 @@ public class SecurityConfiguracao {
      */
     @Bean
     public AutenticacaoFilter jwtAuthenticationFilterBean() {
-        return new AutenticacaoFilter(autenticacaoService, jwtAuthenticationUtilBean());
+                return new AutenticacaoFilter(jwtAuthenticationUtilBean());
     }
 
     /**
