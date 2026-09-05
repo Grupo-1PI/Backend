@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import sptech.school.backend.entity.Usuario;
+import sptech.school.backend.repository.FuncionarioRepository;
 import sptech.school.backend.repository.UsuarioRepository;
 
 import java.util.Optional;
@@ -22,6 +23,9 @@ class AutenticacaoServiceTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
+    @Mock
+    private FuncionarioRepository funcionarioRepository;
+
     @InjectMocks
     private AutenticacaoService service;
 
@@ -32,7 +36,9 @@ class AutenticacaoServiceTest {
         usuario.setEmail("usuario@email.com");
         usuario.setSenha("hash");
         usuario.setAtivo(true);
+        usuario.setId(1L);
         Mockito.when(usuarioRepository.findByEmail("usuario@email.com")).thenReturn(Optional.of(usuario));
+        Mockito.when(funcionarioRepository.findByUsuarioId(1L)).thenReturn(Optional.empty());
 
         UserDetails resultado = service.loadUserByUsername("usuario@email.com");
 
