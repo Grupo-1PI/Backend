@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 import sptech.school.backend.entity.Permissao;
 import sptech.school.backend.repository.PermissaoRepository;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 @Tag(name = "Administracao - Permissoes", description = "Consulta das permissoes disponiveis para cargos")
 @RestController
 @RequestMapping("/permissoes")
+@PreAuthorize("hasAuthority('CRUD_USUARIO')")
 public class PermissaoController {
 
     private final PermissaoRepository permissaoRepository;

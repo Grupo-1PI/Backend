@@ -7,9 +7,12 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -103,6 +106,10 @@ public class GerenciadorTokenJwt {
         return getClaimForToken(token, Claims::getSubject);
     }
 
+    public Claims getClaimsFromToken(String token) {
+        return getAllClaimsFromToken(token);
+    }
+
     /**
      * Extrai a data de expiração do payload do token.
      *
@@ -114,25 +121,32 @@ public class GerenciadorTokenJwt {
     }
 
     /**
-     * Valida se o token é válido para o usuário informado.
-     *
-     * <p>A validação verifica dois critérios:</p>
-     * <ol>
-     *   <li>O subject (username) do token corresponde ao usuário carregado do banco</li>
-     *   <li>O token não está expirado</li>
-     * </ol>
-     *
-     * <p><b>Nota:</b> o JJWT já verifica a assinatura automaticamente ao parsear o token
-     * em {@link #getAllClaimsFromToken}. Se a assinatura for inválida, uma exceção é lançada
-     * antes mesmo de chegar neste método.</p>
-     *
-     * @param token       token JWT recebido na requisição
-     * @param userDetails dados do usuário carregados do banco de dados
-     * @return {@code true} se o token for válido para o usuário informado
+     * Valida assinatura, estrutura e expiração do token sem consultar o banco.
      */
-    public boolean validateToken(String token, UserDetails userDetails) {
-        String username = getUsernameFromToken(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    public boolean validateToken(String token) {
+        getAllClaimsFromToken(token);
+        return true;
+    }
+
+    /**
+     * Extrai authorities do claim assinado do JWT.
+     */
+    public Collection<? extends GrantedAuthority> getAuthoritiesFromToken(String token) {
+        return getAuthoritiesFromClaims(getClaimsFromToken(token));
+    }
+
+    public Collection<? extends GrantedAuthority> getAuthoritiesFromClaims(Claims claims) {
+        String authorities = claims.get("authorities", String.class);
+
+        if (authorities == null || authorities.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.stream(authorities.split(","))
+                .map(String::trim)
+                .filter(authority -> !authority.isEmpty())
+                .map(SimpleGrantedAuthority::new)
+                .toList();
     }
 
     /**

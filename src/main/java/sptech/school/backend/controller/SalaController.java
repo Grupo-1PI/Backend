@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sptech.school.backend.dto.SalaDto.SalaCriacaoDto;
 import sptech.school.backend.dto.SalaDto.SalaResponseDto;
@@ -18,6 +19,7 @@ import java.util.List;
 @RequestMapping("/salas")
 @Tag(name = "Administracao - Salas", description = "Cadastro e manutencao de salas de atendimento")
 @SecurityRequirement(name = "bearerAuth")
+@PreAuthorize("hasAnyAuthority('CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
 public class SalaController {
 
     private final SalaService salaService;

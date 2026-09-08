@@ -24,10 +24,15 @@ import sptech.school.backend.repository.ClienteRepository;
 import sptech.school.backend.repository.EnderecoRepository;
 import sptech.school.backend.repository.FuncionarioRepository;
 import sptech.school.backend.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.AuthenticationException;
 
 @Service
 public class UsuarioService {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(UsuarioService.class);
     private final PasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
     private final EnderecoRepository enderecoRepository;
@@ -35,6 +40,7 @@ public class UsuarioService {
     private final FuncionarioRepository funcionarioRepository;
     private final GerenciadorTokenJwt gerenciadorTokenJwt;
     private final AuthenticationManager authenticationManager;
+    private final LimiteTentativasLogin limiteTentativasLogin;
 
     public UsuarioService(
             PasswordEncoder passwordEncoder,
@@ -43,7 +49,8 @@ public class UsuarioService {
             ClienteRepository clienteRepository,
             FuncionarioRepository funcionarioRepository,
             GerenciadorTokenJwt gerenciadorTokenJwt,
-            AuthenticationManager authenticationManager
+            AuthenticationManager authenticationManager,
+            LimiteTentativasLogin limiteTentativasLogin
     ) {
         this.passwordEncoder = passwordEncoder;
         this.usuarioRepository = usuarioRepository;
@@ -52,6 +59,7 @@ public class UsuarioService {
         this.funcionarioRepository = funcionarioRepository;
         this.gerenciadorTokenJwt = gerenciadorTokenJwt;
         this.authenticationManager = authenticationManager;
+        this.limiteTentativasLogin = limiteTentativasLogin;
     }
 
     @Transactional
@@ -73,10 +81,34 @@ public class UsuarioService {
     }
 
     public UsuarioTokenDto login(UsuarioLoginDto dto) {
+        limiteTentativasLogin.verificar(dto.getEmail());
+
         UsernamePasswordAuthenticationToken credentials =
                 new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha());
 
-        Authentication authentication = authenticationManager.authenticate(credentials);
+        Authentication authentication;
+
+        try {
+            authentication = authenticationManager.authenticate(credentials);
+
+            LOGGER.info(
+                    "[AUTENTICACAO] Login realizado com sucesso - usuario={}",
+                    dto.getEmail()
+            );
+
+        } catch (AuthenticationException e) {
+
+            limiteTentativasLogin.registrarFalha(dto.getEmail());
+
+            LOGGER.warn(
+                    "[AUTENTICACAO] Falha de autenticacao - usuario={}",
+                    dto.getEmail()
+            );
+
+            throw e;
+        }
+
+        limiteTentativasLogin.limpar(dto.getEmail());
 
         Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario nao encontrado"));

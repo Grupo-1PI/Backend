@@ -15,8 +15,6 @@ import sptech.school.backend.dto.UsuarioDto.UsuarioLoginDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioTokenDto;
 import sptech.school.backend.service.UsuarioService;
 
-import java.time.Duration;
-
 @Tag(name = "Autenticacao e Usuarios", description = "Cadastro, login e logout de usuarios")
 @RestController
 @RequestMapping("/usuarios")
@@ -48,7 +46,13 @@ public class UsuarioController {
 
         UsuarioTokenDto tokenDto = service.login(dto);
 
-        adicionarCookieAutenticacao(response, tokenDto.getToken(), Duration.ofHours(1));
+        Cookie cookie = new Cookie(COOKIE_NOME, tokenDto.getToken());
+        cookie.setHttpOnly(true);
+        cookie.setAttribute("SameSite", "Lax");
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60);
+
+        response.addCookie(cookie);
 
         return ResponseEntity.ok(tokenDto);
     }
@@ -58,7 +62,13 @@ public class UsuarioController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
 
-        adicionarCookieAutenticacao(response, "", Duration.ZERO);
+        Cookie cookie = new Cookie(COOKIE_NOME, null);
+        cookie.setHttpOnly(true);
+        cookie.setAttribute("SameSite", "Lax");
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+
+        response.addCookie(cookie);
 
         return ResponseEntity.ok().build();
     }

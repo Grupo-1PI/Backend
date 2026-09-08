@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sptech.school.backend.dto.DashboardDto.AgendamentoDiasSemanaDto;
 import sptech.school.backend.dto.DashboardDto.ServicoDadosDto;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequestMapping("/dashboard")
 @Tag(name = "Dashboard e Indicadores", description = "Indicadores gerenciais de agendamentos, clientes e servicos")
 @SecurityRequirement(name = "bearerAuth")
+@PreAuthorize("!hasAuthority('CLIENTE')")
 public class DashboardController {
 
     private final DashboardService dashboardService;

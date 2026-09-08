@@ -79,12 +79,6 @@ public class SecurityConfiguracao {
             "/api/public/authenticate",
             "/webjars/**",
             "/v3/api-docs/**",
-            "/actuator/*",
-            "/usuarios",
-            "/usuarios/login/**",
-            "/usuarios/logout/**",
-            "/h2-console/**",
-            "/h2-console/*/**",
             "/error/**"
     };
 
@@ -104,7 +98,7 @@ public class SecurityConfiguracao {
                 // Desabilita restrição de X-Frame-Options para permitir o console H2 no browser.
                 // Em produção, remova isso — o H2 console não deve ser exposto.
                 .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
 
                 // Habilita CORS com a configuração definida em corsConfigurationSource()
                 .cors(Customizer.withDefaults())
@@ -119,6 +113,7 @@ public class SecurityConfiguracao {
                 // Define quais URLs são públicas e quais exigem autenticação
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(URLS_PERMITIDAS).permitAll()  // rotas públicas
+                        .requestMatchers(HttpMethod.POST, "/usuarios", "/usuarios/login").permitAll()
                         .anyRequest().authenticated()                  // todas as outras exigem token
                 )
 
@@ -165,7 +160,7 @@ public class SecurityConfiguracao {
      */
     @Bean
     public AutenticacaoFilter jwtAuthenticationFilterBean() {
-        return new AutenticacaoFilter(autenticacaoService, jwtAuthenticationUtilBean());
+                return new AutenticacaoFilter(jwtAuthenticationUtilBean());
     }
 
     /**
