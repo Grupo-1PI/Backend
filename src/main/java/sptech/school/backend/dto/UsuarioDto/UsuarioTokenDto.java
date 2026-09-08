@@ -1,5 +1,6 @@
 package sptech.school.backend.dto.UsuarioDto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,8 @@ public class UsuarioTokenDto {
     @Schema(description = "E-mail do usuário autenticado", example = "fernanda.henckel@gmail.com")
     private String email;
 
-    @Schema(description = "Token JWT de autenticação (Bearer)", example = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmZWxpcGVAZW1haWwuY29tIiwiaWF0Ijo...")
+    @JsonIgnore
+    @Schema(hidden = true)
     private String token;
     private Long clienteId;
     private Long funcionarioId;

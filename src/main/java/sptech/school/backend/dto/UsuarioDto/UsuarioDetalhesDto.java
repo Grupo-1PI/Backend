@@ -2,6 +2,7 @@ package sptech.school.backend.dto.UsuarioDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import sptech.school.backend.entity.Usuario;
 import java.util.Collection;
