@@ -4,10 +4,9 @@ import static sptech.school.backend.config.SecurityConstants.COOKIE_NOME;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sptech.school.backend.dto.UsuarioDto.UsuarioCriacaoDto;
@@ -71,16 +70,5 @@ public class UsuarioController {
         response.addCookie(cookie);
 
         return ResponseEntity.ok().build();
-    }
-
-    private void adicionarCookieAutenticacao(HttpServletResponse response, String token, Duration maxAge) {
-        ResponseCookie cookie = ResponseCookie.from(COOKIE_NOME, token)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
-                .path("/")
-                .maxAge(maxAge)
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }
