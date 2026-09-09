@@ -57,7 +57,7 @@ class UsuarioControllerTest {
                 .andExpect(status().isCreated());
     }
 
-    @DisplayName("Unidade: UsuarioController | Cenario: post login | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200 com token")
+    @DisplayName("Unidade: UsuarioController | Cenario: post login | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200 com token no cookie")
     @Test
     void postLogin_deveRetornar200ComToken() throws Exception {
         Mockito.when(usuarioService.login(Mockito.any(UsuarioLoginDto.class))).thenReturn(tokenDto());
@@ -66,7 +66,6 @@ class UsuarioControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDto())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("token"))
                 .andExpect(cookie().value("authToken", "token"));
     }
 
