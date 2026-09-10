@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import sptech.school.backend.dto.UsuarioDto.UsuarioCriacaoDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioLoginDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioTokenDto;
+import sptech.school.backend.service.AutenticacaoService;
 import sptech.school.backend.service.UsuarioService;
 
 @Tag(name = "Autenticacao e Usuarios", description = "Cadastro, login e logout de usuarios")
@@ -20,9 +21,11 @@ import sptech.school.backend.service.UsuarioService;
 public class UsuarioController {
 
     private final UsuarioService service;
+    private final AutenticacaoService autenticacaoService;
 
-    public UsuarioController(UsuarioService service) {
+    public UsuarioController(UsuarioService service, AutenticacaoService autenticacaoService) {
         this.service = service;
+        this.autenticacaoService = autenticacaoService;
     }
 
     @Operation(summary = "Criar usuario", description = "Cria um novo usuario com dados pessoais e endereco.")
@@ -43,7 +46,7 @@ public class UsuarioController {
             @Valid @RequestBody UsuarioLoginDto dto,
             HttpServletResponse response) {
 
-        UsuarioTokenDto tokenDto = service.login(dto);
+        UsuarioTokenDto tokenDto = autenticacaoService.login(dto);
 
         Cookie cookie = new Cookie(COOKIE_NOME, tokenDto.getToken());
         cookie.setHttpOnly(true);
