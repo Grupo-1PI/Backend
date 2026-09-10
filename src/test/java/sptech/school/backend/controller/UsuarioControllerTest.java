@@ -18,7 +18,6 @@ import sptech.school.backend.dto.UsuarioDto.UsuarioCriacaoDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioLoginDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioTokenDto;
 import sptech.school.backend.service.AutenticacaoService;
-import sptech.school.backend.service.UsuarioService;
 
 import java.time.LocalDate;
 
