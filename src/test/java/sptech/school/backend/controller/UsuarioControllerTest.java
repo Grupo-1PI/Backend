@@ -17,7 +17,8 @@ import sptech.school.backend.dto.EnderecoDto.EnderecoDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioCriacaoDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioLoginDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioTokenDto;
-import sptech.school.backend.service.AutenticacaoService;
+import sptech.school.backend.service.LoginService;
+import sptech.school.backend.service.UsuarioService;
 
 import java.time.LocalDate;
 
@@ -45,7 +46,10 @@ class UsuarioControllerTest {
     }
 
     @Mock
-    private AutenticacaoService autenticacaoService;
+    private UsuarioService usuarioService;
+
+    @Mock
+    private LoginService loginService;
 
     @DisplayName("Unidade: UsuarioController | Cenario: post usuarios | Dados: dados preparados no arrange do teste | Verifica: deve retornar 201")
     @Test
@@ -59,7 +63,7 @@ class UsuarioControllerTest {
     @DisplayName("Unidade: UsuarioController | Cenario: post login | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200 com token no cookie")
     @Test
     void postLogin_deveRetornar200ComToken() throws Exception {
-        Mockito.when(autenticacaoService.login(Mockito.any(UsuarioLoginDto.class))).thenReturn(tokenDto());
+        Mockito.when(loginService.login(Mockito.any(UsuarioLoginDto.class))).thenReturn(tokenDto());
 
         mockMvc.perform(post("/usuarios/login")
                         .contentType(MediaType.APPLICATION_JSON)
