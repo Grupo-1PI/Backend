@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/dashboard")
 @Tag(name = "Dashboard e Indicadores", description = "Indicadores gerenciais de agendamentos, clientes e servicos")
 @SecurityRequirement(name = "bearerAuth")
-@PreAuthorize("!hasAuthority('CLIENTE')")
+@PreAuthorize("hasAuthority('CRUD_DASHBOARD')")
 public class DashboardController {
 
     private final DashboardService dashboardService;
