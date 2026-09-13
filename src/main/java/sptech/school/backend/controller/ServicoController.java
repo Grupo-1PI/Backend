@@ -27,7 +27,7 @@ import java.util.List;
 @Tag(name = "Administracao - Servicos", description = "Cadastro e manutencao dos servicos oferecidos")
 @RestController
 @RequestMapping("/servicos")
-@PreAuthorize("hasAnyAuthority('CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
+@PreAuthorize("hasAnyAuthority('CLIENTE', 'CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
 public class ServicoController {
 
     private final ServicoService service;

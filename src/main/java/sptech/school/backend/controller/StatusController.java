@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/status")
 @Tag(name = "Administracao - Status", description = "Consulta dos status de agendamento")
 @SecurityRequirement(name = "bearerAuth")
-@PreAuthorize("hasAnyAuthority('CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
+@PreAuthorize("hasAnyAuthority('CLIENTE', 'CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
 public class StatusController {
 
     private final StatusService statusService;
