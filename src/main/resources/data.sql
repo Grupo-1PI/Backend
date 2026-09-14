@@ -68,7 +68,8 @@ INSERT INTO status (id, nome) VALUES
 (1, 'Agendado'),
 (2, 'Confirmado'),
 (3, 'Cancelado'),
-(4, 'Finalizado');
+(4, 'Finalizado'),
+(5, 'Pendente');
 
 
 -- ─────────────────────────────────────────
