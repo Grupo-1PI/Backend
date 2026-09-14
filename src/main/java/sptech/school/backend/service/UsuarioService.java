@@ -14,10 +14,15 @@ import sptech.school.backend.mapper.UsuarioMapper;
 import sptech.school.backend.repository.ClienteRepository;
 import sptech.school.backend.repository.EnderecoRepository;
 import sptech.school.backend.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.AuthenticationException;
 
 @Service
 public class UsuarioService {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(UsuarioService.class);
     private final PasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
     private final EnderecoRepository enderecoRepository;
