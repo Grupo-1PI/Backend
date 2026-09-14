@@ -50,7 +50,7 @@ public class AgendamentoController {
     @ApiResponse(responseCode = "404", description = "Recurso nao encontrado")
     @ApiResponse(responseCode = "409", description = "Conflito de horario")
     @PostMapping
-    @PreAuthorize("hasAuthority('CRUD_AGENDAMENTO')")
+    @PreAuthorize("hasAnyAuthority('CLIENTE', 'CRUD_AGENDAMENTO')")
     public ResponseEntity<AgendamentoResponseDto> criar(@RequestBody AgendamentoRequestDto dto) {
         Agendamento agendamento = toEntity(dto);
 

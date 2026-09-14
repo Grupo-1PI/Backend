@@ -27,7 +27,7 @@ import java.util.List;
 @Tag(name = "Funcionarios", description = "Cadastro, consulta e manutencao dos funcionarios da clinica")
 @RestController
 @RequestMapping("/funcionarios")
-@PreAuthorize("hasAuthority('CRUD_USUARIO')")
+@PreAuthorize("hasAnyAuthority('CLIENTE', 'CRUD_USUARIO')")
 public class FuncionarioController {
 
     private final FuncionarioService service;
