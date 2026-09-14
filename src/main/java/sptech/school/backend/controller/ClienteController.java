@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/clientes")
 @Tag(name = "Clientes", description = "Consulta de clientes cadastrados")
 @SecurityRequirement(name = "bearerAuth")
-@PreAuthorize("!hasAuthority('CLIENTE')")
+@PreAuthorize("hasAuthority('CRUD_CLIENTE')")
 public class ClienteController {
 
     private final ClienteService clienteService;

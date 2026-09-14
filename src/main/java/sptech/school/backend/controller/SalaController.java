@@ -19,7 +19,7 @@ import java.util.List;
 @RequestMapping("/salas")
 @Tag(name = "Administracao - Salas", description = "Cadastro e manutencao de salas de atendimento")
 @SecurityRequirement(name = "bearerAuth")
-@PreAuthorize("hasAnyAuthority('CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
+@PreAuthorize("hasAnyAuthority('CLIENTE', 'CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
 public class SalaController {
 
     private final SalaService salaService;
