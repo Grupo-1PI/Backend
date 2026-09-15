@@ -5,6 +5,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,6 +41,8 @@ import java.util.stream.Collectors;
  * <p><b>Biblioteca utilizada:</b> JJWT 0.12.x (io.jsonwebtoken)</p>
  */
 public class GerenciadorTokenJwt {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GerenciadorTokenJwt.class);
 
     /**
      * Chave secreta usada para assinar e verificar tokens (algoritmo HMAC-SHA256).
@@ -131,8 +135,32 @@ public class GerenciadorTokenJwt {
      * @return {@code true} se o token for válido para o usuário informado
      */
     public boolean validateToken(String token, UserDetails userDetails) {
-        String username = getUsernameFromToken(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        if (userDetails == null) {
+            return false;
+        }
+
+        try {
+            Claims claims = getAllClaimsFromToken(token);
+            return userDetails.getUsername().equals(claims.getSubject())
+                    && claims.getExpiration().after(new Date());
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException exception) {
+            LOGGER.warn("Falha na validação do token JWT");
+            return false;
+        }
+    }
+
+    /**
+     * Valida a assinatura e a validade temporal de um token sem expor detalhes
+     * do token ou da exceção ao chamador.
+     */
+    public boolean validateToken(String token) {
+        try {
+            Claims claims = getAllClaimsFromToken(token);
+            return claims.getExpiration() != null && claims.getExpiration().after(new Date());
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException exception) {
+            LOGGER.warn("Falha na validação do token JWT");
+            return false;
+        }
     }
 
     /**
@@ -149,11 +177,6 @@ public class GerenciadorTokenJwt {
     public <T> T getClaimForToken(String token, Function<Claims, T> claimsResolver) {
         Claims claims = getAllClaimsFromToken(token);
         return claimsResolver.apply(claims);
-    }
-
-    private boolean isTokenExpired(String token) {
-        Date expirationDate = getExpirationDateFromToken(token);
-        return expirationDate.before(new Date(System.currentTimeMillis()));
     }
 
     /**

@@ -22,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import sptech.school.backend.service.AutenticacaoService;
+import sptech.school.backend.exception.IntegridadeRequestFilter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -137,6 +138,7 @@ public class SecurityConfiguracao {
         // Isso garante que o token seja processado antes que o Spring Security tente
         // qualquer outro mecanismo de autenticação.
         http.addFilterBefore(jwtAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(integridadeRequestFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -177,6 +179,11 @@ public class SecurityConfiguracao {
     public GerenciadorTokenJwt jwtAuthenticationUtilBean() {
         return new GerenciadorTokenJwt();
     }
+
+        @Bean
+        public IntegridadeRequestFilter integridadeRequestFilter() {
+                return new IntegridadeRequestFilter();
+        }
 
     /**
      * Define o algoritmo de hash para senhas: BCrypt.
