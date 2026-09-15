@@ -17,13 +17,13 @@ import sptech.school.backend.dto.EnderecoDto.EnderecoDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioCriacaoDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioLoginDto;
 import sptech.school.backend.dto.UsuarioDto.UsuarioTokenDto;
+import sptech.school.backend.service.LoginService;
 import sptech.school.backend.service.UsuarioService;
 
 import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +48,9 @@ class UsuarioControllerTest {
     @Mock
     private UsuarioService usuarioService;
 
+    @Mock
+    private LoginService loginService;
+
     @DisplayName("Unidade: UsuarioController | Cenario: post usuarios | Dados: dados preparados no arrange do teste | Verifica: deve retornar 201")
     @Test
     void postUsuarios_deveRetornar201() throws Exception {
@@ -57,16 +60,15 @@ class UsuarioControllerTest {
                 .andExpect(status().isCreated());
     }
 
-    @DisplayName("Unidade: UsuarioController | Cenario: post login | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200 com token")
+    @DisplayName("Unidade: UsuarioController | Cenario: post login | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200 com token no cookie")
     @Test
     void postLogin_deveRetornar200ComToken() throws Exception {
-        Mockito.when(usuarioService.login(Mockito.any(UsuarioLoginDto.class))).thenReturn(tokenDto());
+        Mockito.when(loginService.login(Mockito.any(UsuarioLoginDto.class))).thenReturn(tokenDto());
 
         mockMvc.perform(post("/usuarios/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDto())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("token"))
                 .andExpect(cookie().value("authToken", "token"));
     }
 

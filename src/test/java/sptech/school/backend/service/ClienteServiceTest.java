@@ -55,6 +55,26 @@ class ClienteServiceTest {
         Assertions.assertThrows(RecursoNaoEncontradoException.class, () -> service.buscarPorId(1L));
     }
 
+    @DisplayName("Unidade: ClienteService | Cenario: buscar por e-mail | Dados: cliente existente | Verifica: deve retornar")
+    @Test
+    void buscarPorEmailUsuario_deveRetornar_quandoExiste() {
+        Cliente cliente = cliente(1L);
+        Mockito.when(clienteRepository.findByUsuarioEmail("cliente@email.com")).thenReturn(Optional.of(cliente));
+
+        Cliente resultado = service.buscarPorEmailUsuario("cliente@email.com");
+
+        Assertions.assertEquals(cliente, resultado);
+    }
+
+    @DisplayName("Unidade: ClienteService | Cenario: buscar por e-mail | Dados: cliente inexistente | Verifica: deve lancar")
+    @Test
+    void buscarPorEmailUsuario_deveLancar_quandoNaoExiste() {
+        Mockito.when(clienteRepository.findByUsuarioEmail("cliente@email.com")).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(RecursoNaoEncontradoException.class,
+                () -> service.buscarPorEmailUsuario("cliente@email.com"));
+    }
+
     private Cliente cliente(Long id) {
         Cliente cliente = new Cliente();
         cliente.setId(id);

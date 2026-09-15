@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sptech.school.backend.dto.EspecialidadeDto.EspecialidadeCriacaoDto;
 import sptech.school.backend.dto.EspecialidadeDto.EspecialidadeResponseDto;
@@ -18,6 +19,7 @@ import java.util.List;
 @Tag(name = "Administracao - Especialidades", description = "Cadastro e manutencao de especialidades e servicos vinculados")
 @RestController
 @RequestMapping("/especialidades")
+@PreAuthorize("hasAnyAuthority('CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
 public class EspecialidadeController {
 
     private final EspecialidadeService service;

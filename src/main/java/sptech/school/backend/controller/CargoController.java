@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import sptech.school.backend.dto.CargoDto.CargoCriacaoDto;
 import sptech.school.backend.dto.CargoDto.CargoResponseDto;
 import sptech.school.backend.mapper.CargoMapper;
@@ -18,6 +19,7 @@ import java.util.List;
 @Tag(name = "Administracao - Cargos", description = "Cadastro e manutencao de cargos e permissoes")
 @RestController
 @RequestMapping("/cargos")
+@PreAuthorize("hasAuthority('CRUD_USUARIO')")
 public class CargoController {
 
     private final CargoService service;

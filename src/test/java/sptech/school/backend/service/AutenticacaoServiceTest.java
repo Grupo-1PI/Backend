@@ -10,9 +10,14 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import sptech.school.backend.entity.Cargo;
+import sptech.school.backend.entity.Funcionario;
+import sptech.school.backend.entity.Permissao;
 import sptech.school.backend.entity.Usuario;
+import sptech.school.backend.repository.FuncionarioRepository;
 import sptech.school.backend.repository.UsuarioRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,6 +26,9 @@ class AutenticacaoServiceTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private FuncionarioRepository funcionarioRepository;
 
     @InjectMocks
     private AutenticacaoService service;

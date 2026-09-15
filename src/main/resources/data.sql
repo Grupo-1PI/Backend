@@ -1,3 +1,4 @@
+
 -- ─────────────────────────────────────────
 -- 1. ENDEREÇO  (obrigatório antes de usuario)
 -- ─────────────────────────────────────────
@@ -9,22 +10,32 @@ INSERT INTO endereco (id, cep, logradouro, bairro, cidade, uf, numero, complemen
 (5, '07000-000', 'Rua das Flores',          'Centro',              'Guarulhos',   'SP', '123',  NULL);
 
 
+
+
 -- ─────────────────────────────────────────
 -- 2. CARGO
 -- ─────────────────────────────────────────
 INSERT INTO cargo (id, nome, descricao) VALUES
-(1, 'Administrador',  'Acesso total ao sistema'),
-(2, 'Recepcionista',  'Gerencia agendamentos'),
-(3, 'Acupunturista',  'Realiza atendimentos');
+(1, 'Administrador',   'Acesso total ao sistema'),
+(2, 'Recepcionista',   'Gerencia agendamentos/cadastros'),
+(3, 'Acupunturista',   'Realiza atendimentos/agenda');
 
 
 -- ─────────────────────────────────────────
 -- 3. PERMISSÕES
 -- ─────────────────────────────────────────
 INSERT INTO permissoes (id, nome, descricao) VALUES
-(1, 'CRUD_USUARIO',         'Gerenciar usuários'),
-(2, 'CRUD_AGENDAMENTO',     'Gerenciar agendamentos'),
-(3, 'REALIZAR_ATENDIMENTO', 'Executar atendimentos');
+-- CRUD_USUARIO: CargoController, FuncionarioController, PermissaoController
+(1,  'CRUD_USUARIO',              'Gerenciar usuarios, cargos, funcionarios e permissoes'),
+-- CRUD_AGENDAMENTO: AgendamentoController, AgendaFuncionarioController,
+--                   EspecialidadeController, SalaController, ServicoController, StatusController
+(2,  'CRUD_AGENDAMENTO',          'Gerenciar agendamentos, agendas, especialidades, salas, servicos e status'),
+-- REALIZAR_ATENDIMENTO: mesmos controllers de CRUD_AGENDAMENTO (acesso do acupunturista)
+(3,  'REALIZAR_ATENDIMENTO',      'Visualizar e executar atendimentos'),
+-- CRUD_CLIENTE: ClienteController (acesso exclusivo para staff)
+(4,  'CRUD_CLIENTE',              'Listar e consultar clientes'),
+-- CRUD_DASHBOARD: DashboardController (acesso exclusivo para staff)
+(5,  'CRUD_DASHBOARD',            'Acessar metricas e dashboards');
 
 
 -- ─────────────────────────────────────────
@@ -32,11 +43,22 @@ INSERT INTO permissoes (id, nome, descricao) VALUES
 --    Admin: todas | Recepcionista: agendamento | Acupunturista: atendimento
 -- ─────────────────────────────────────────
 INSERT INTO permissoes_cargo (fkPermissoes, fkCargo) VALUES
-(1, 1),
-(2, 1),
-(3, 1),
-(2, 2),
-(3, 3);
+(1, 1),  -- CRUD_USUARIO
+(2, 1),  -- CRUD_AGENDAMENTO
+(3, 1),  -- REALIZAR_ATENDIMENTO
+(4, 1),  -- CRUD_CLIENTE
+(5, 1);  -- CRUD_DASHBOARD
+
+-- Recepcionista: agendamentos, clientes, dashboard
+INSERT INTO permissoes_cargo (fkPermissoes, fkCargo) VALUES
+(2, 2),  -- CRUD_AGENDAMENTO
+(4, 2),  -- CRUD_CLIENTE
+(5, 2);  -- CRUD_DASHBOARD
+
+-- Acupunturista: atendimentos e agendamentos
+INSERT INTO permissoes_cargo (fkPermissoes, fkCargo) VALUES
+(2, 3),  -- CRUD_AGENDAMENTO
+(3, 3);  -- REALIZAR_ATENDIMENTO
 
 
 -- ─────────────────────────────────────────
@@ -46,7 +68,8 @@ INSERT INTO status (id, nome) VALUES
 (1, 'Agendado'),
 (2, 'Confirmado'),
 (3, 'Cancelado'),
-(4, 'Finalizado');
+(4, 'Finalizado'),
+(5, 'Pendente');
 
 
 -- ─────────────────────────────────────────
@@ -62,10 +85,10 @@ INSERT INTO sala (id, descricao) VALUES
 -- 7. ESPECIALIDADE
 -- ─────────────────────────────────────────
 INSERT INTO especialidade (id, nome) VALUES
- (1, 'Dor muscular'),
- (2, 'Ansiedade'),
- (3, 'Insônia'),
- (4, 'Reabilitação');
+(1, 'Dor muscular'),
+(2, 'Ansiedade'),
+(3, 'Insônia'),
+(4, 'Reabilitação');
 
 
 -- ─────────────────────────────────────────
@@ -115,14 +138,14 @@ INSERT INTO sala_servico (fkSala, fkServico) VALUES
 INSERT INTO usuario (id, nome, telefone, email, senha, data_nascimento, ativo, fkEndereco) VALUES
 -- Funcionários
 (1, 'Dr. Ricardo Silveira', '11999990001', 'ricardo@taotenshin.com',
- '$2a$12$LlrgS/ccNTbuAfIAGAJGZOjnPKnJRg7cGWX3KatA1EKltYXtVxR5S', '1985-03-15', 1, 1),
+'$2a$12$LlrgS/ccNTbuAfIAGAJGZOjnPKnJRg7cGWX3KatA1EKltYXtVxR5S', '1985-03-15', 1, 1),
 (2, 'Dra. Beatriz Mendes',  '11999990002', 'beatriz@taotenshin.com',
- '$2a$12$LlrgS/ccNTbuAfIAGAJGZOjnPKnJRg7cGWX3KatA1EKltYXtVxR5S', '1990-07-22', 1, 2),
+'$2a$12$LlrgS/ccNTbuAfIAGAJGZOjnPKnJRg7cGWX3KatA1EKltYXtVxR5S', '1990-07-22', 1, 2),
 -- Clientes
 (3, 'Felipe Silva',         '11988880001', 'felipe@email.com',
- '$2a$12$LlrgS/ccNTbuAfIAGAJGZOjnPKnJRg7cGWX3KatA1EKltYXtVxR5S', '2000-05-10', 1, 3),
+'$2a$12$LlrgS/ccNTbuAfIAGAJGZOjnPKnJRg7cGWX3KatA1EKltYXtVxR5S', '2000-05-10', 1, 3),
 (4, 'Ana Paula Costa',      '11988880002', 'ana@email.com',
- '$2a$12$LlrgS/ccNTbuAfIAGAJGZOjnPKnJRg7cGWX3KatA1EKltYXtVxR5S', '1992-11-03', 1, 4);
+'$2a$12$LlrgS/ccNTbuAfIAGAJGZOjnPKnJRg7cGWX3KatA1EKltYXtVxR5S', '1992-11-03', 1, 4);
 
 
 -- ─────────────────────────────────────────
