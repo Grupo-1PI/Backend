@@ -79,6 +79,8 @@ public class SecurityConfiguracao {
             "/api/public/authenticate",
             "/webjars/**",
             "/v3/api-docs/**",
+            // Necessario para o health check do Application Load Balancer.
+            "/actuator/health",
             "/error/**"
     };
 
