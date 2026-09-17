@@ -6,7 +6,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import sptech.school.backend.entity.Usuario;
 import java.util.Collection;
-import java.util.List;
 
 @Schema(name = "Usuario - Detalhes", description = "Dados detalhados do usuário para contexto de segurança e sessão")
 public class UsuarioDetalhesDto implements UserDetails {
@@ -15,11 +14,16 @@ public class UsuarioDetalhesDto implements UserDetails {
     private final Usuario usuario;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UsuarioDetalhesDto(Usuario usuario, Collection<String> permissoes) {
+    public UsuarioDetalhesDto(Usuario usuario) {
+        this(usuario, java.util.List.of());
+    }
+
+    public UsuarioDetalhesDto(
+            Usuario usuario,
+            Collection<? extends GrantedAuthority> authorities
+    ) {
         this.usuario = usuario;
-        this.authorities = permissoes.stream()
-                .map(SimpleGrantedAuthority::new)
-                .toList();
+        this.authorities = authorities;
     }
 
     @Schema(hidden = true)

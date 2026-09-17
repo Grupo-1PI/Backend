@@ -100,6 +100,12 @@ public class AgendamentoService {
         return agendamentoRepository.findByClienteId(clienteId);
     }
 
+    public boolean clientePertenceAoUsuario(Long clienteId, String email) {
+        return clienteRepository.findById(clienteId)
+                .map(cliente -> cliente.getUsuario().getEmail().equalsIgnoreCase(email))
+                .orElse(false);
+    }
+
     @Transactional
     public Agendamento atualizar(
             Long id,

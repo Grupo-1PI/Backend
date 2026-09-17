@@ -1,7 +1,10 @@
+CREATE DATABASE IF NOT EXISTS taotenshin;
+USE taotenshin;
+
 CREATE TABLE IF NOT EXISTS cargo (
                                      id INT NOT NULL AUTO_INCREMENT,
                                      nome VARCHAR(45) NOT NULL,
-    descricao VARCHAR(45) NOT NULL,
+    descricao VARCHAR(255) NOT NULL,
     PRIMARY KEY (id)
     );
 
@@ -105,7 +108,7 @@ CREATE TABLE IF NOT EXISTS cliente (
 
 CREATE TABLE IF NOT EXISTS sala (
                                     id INT NOT NULL AUTO_INCREMENT,
-                                    descricao VARCHAR(45) NULL DEFAULT NULL,
+                                    descricao VARCHAR(255) NULL DEFAULT NULL,
 
     PRIMARY KEY (id)
     );
@@ -239,7 +242,7 @@ CREATE TABLE IF NOT EXISTS funcionario_especialidade (
 CREATE TABLE IF NOT EXISTS permissoes (
                                           id INT NOT NULL AUTO_INCREMENT,
                                           nome VARCHAR(45) NOT NULL,
-    descricao VARCHAR(45) NOT NULL,
+    descricao VARCHAR(255) NOT NULL,
 
     PRIMARY KEY (id)
     );

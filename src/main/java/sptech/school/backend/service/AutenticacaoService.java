@@ -1,15 +1,18 @@
 package sptech.school.backend.service;
 
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sptech.school.backend.dto.UsuarioDto.UsuarioDetalhesDto;
 import sptech.school.backend.entity.Usuario;
 import sptech.school.backend.repository.FuncionarioRepository;
 import sptech.school.backend.repository.UsuarioRepository;
-import sptech.school.backend.dto.UsuarioDto.UsuarioDetalhesDto;
-import java.util.List;
+
+import java.util.Collections;
 
 @Service
 public class AutenticacaoService implements UserDetailsService {
@@ -31,12 +34,12 @@ public class AutenticacaoService implements UserDetailsService {
                         new UsernameNotFoundException("Usuário não encontrado")
                 );
 
-        List<String> permissoes = funcionarioRepository.findByUsuarioId(usuario.getId())
-                .map(funcionario -> funcionario.getCargo().getPermissoes().stream()
-                        .map(permissao -> permissao.getNome())
-                        .toList())
-                .orElseGet(List::of);
+        var authorities = funcionarioRepository.findByUsuarioId(usuario.getId())
+            .map(funcionario -> funcionario.getCargo().getPermissoes().stream()
+                .map(permissao -> new SimpleGrantedAuthority(permissao.getNome()))
+                .toList())
+            .orElseGet(() -> Collections.singletonList(new SimpleGrantedAuthority("CLIENTE")));
 
-        return new UsuarioDetalhesDto(usuario, permissoes);
+        return new UsuarioDetalhesDto(usuario, authorities);
     }
 }

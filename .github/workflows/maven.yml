@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build and Test Spring Boot Application
@@ -20,8 +23,32 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Cache Dependency-Check DB
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: dependency-check-data-v2-${{ runner.os }}
+          restore-keys: dependency-check-data-v2-
+
       - name: Build and run tests
         run: mvn clean verify
 
       - name: Upload dependency graph
         uses: advanced-security/maven-dependency-submission-action@v5
+        if: always()
+        with:
+          ignore-maven-wrapper: true
+
+      - name: Upload Dependency-Check report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-check-report
+          path: target/dependency-check-report.*
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: software-bill-of-materials
+          path: target/*.json

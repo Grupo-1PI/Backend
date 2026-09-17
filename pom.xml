@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.13</version>
+		<version>3.5.16</version>
 		<relativePath/>
 	</parent>
 
@@ -20,6 +20,8 @@
 		<java.version>21</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<tomcat.version>10.1.57</tomcat.version>
+		<log4j2.version>2.26.1</log4j2.version>
 	</properties>
 
 	<dependencies>
@@ -134,6 +136,44 @@
 						<id>report</id>
 						<phase>test</phase>
 						<goals><goal>report</goal></goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- NOVO: análise de CVEs nas dependências -->
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>12.2.0</version>
+				<configuration>
+					<failBuildOnCVSS>7</failBuildOnCVSS>
+					<!-- API key do NVD via variável de ambiente no CI -->
+					<nvdApiKey>5AD89F2E-5E45-46CF-AE7C-3443A05EF262</nvdApiKey>
+					<suppressionFile>dependency-check-suppressions.xml</suppressionFile>
+					<formats>
+						<format>HTML</format>
+						<format>JSON</format>
+					</formats>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- NOVO: geração do SBOM -->
+			<plugin>
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
+				<version>2.9.1</version>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>makeBom</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
