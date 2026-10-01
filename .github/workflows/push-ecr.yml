@@ -1,4 +1,3 @@
-```yaml
 name: Push Manual para AWS ECR
 
 on:
@@ -86,4 +85,3 @@ jobs:
           tags: |
             ${{ steps.image.outputs.image }}:latest
             ${{ steps.image.outputs.image }}:${{ github.sha }}
-```
