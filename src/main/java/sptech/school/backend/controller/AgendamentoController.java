@@ -44,7 +44,7 @@ public class AgendamentoController {
     @Operation(summary = "Criar agendamento", description = "Cria um agendamento vinculando cliente, funcionario, sala, servico e status.")
     @ApiResponse(responseCode = "201", description = "Criado com sucesso")
     @ApiResponse(responseCode = "400", description = "Regra de negocio invalida")
-    @ApiResponse(responseCode = "404", description = "Recurso nao encontrado")
+    @ApiRsesponse(responseCode = "404", description = "Recurso nao encontrado")
     @ApiResponse(responseCode = "409", description = "Conflito de horario")
     @PostMapping
     @PreAuthorize("hasAnyAuthority('CLIENTE', 'CRUD_AGENDAMENTO')")
