@@ -10,4 +10,6 @@ public interface AgendaExcecaoRepository extends JpaRepository<AgendaExcecao, Lo
     List<AgendaExcecao> findByFuncionarioIdAndData(Long funcionarioId, LocalDate data);
 
     List<AgendaExcecao> findByFuncionarioId(Long funcionarioId);
+
+    long countByFuncionarioId(Long funcionarioId);
 }
