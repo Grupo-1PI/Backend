@@ -7,4 +7,7 @@ import java.util.List;
 public interface AtendimentoServicoRepository extends JpaRepository<AtendimentoServico, Long> {
 
     List<AtendimentoServico> findByAgendamentoId(Long agendamentoId);
+
+    /** Quantos atendimentos já utilizaram o serviço informado. */
+    long countByServicoId(Long servicoId);
 }

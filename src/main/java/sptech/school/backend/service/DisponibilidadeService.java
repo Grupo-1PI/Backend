@@ -5,12 +5,19 @@ import org.springframework.transaction.annotation.Transactional;
 import sptech.school.backend.dto.DisponibilidadeDto.DiaDisponivelDto;
 import sptech.school.backend.dto.DisponibilidadeDto.HorarioDisponivelDto;
 import sptech.school.backend.dto.DisponibilidadeDto.SalaDisponibilidadeDto;
+import sptech.school.backend.dto.FuncionarioDto.FuncionarioResponseDto;
 import sptech.school.backend.entity.AgendaFuncionario;
+import sptech.school.backend.entity.Funcionario;
 import sptech.school.backend.entity.Sala;
+import sptech.school.backend.entity.Servico;
+import sptech.school.backend.exception.RecursoNaoEncontradoException;
+import sptech.school.backend.mapper.FuncionarioMapper;
 import sptech.school.backend.repository.AgendaExcecaoRepository;
 import sptech.school.backend.repository.AgendaFuncionarioRepository;
 import sptech.school.backend.repository.AgendamentoRepository;
 import sptech.school.backend.repository.SalaRepository;
+import sptech.school.backend.repository.ServicoRepository;
+import sptech.school.backend.repository.FuncionarioAgendamentoRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -32,17 +39,23 @@ public class DisponibilidadeService {
     private final AgendaFuncionarioRepository agendaFuncionarioRepository;
     private final AgendaExcecaoRepository agendaExcecaoRepository;
     private final SalaRepository salaRepository;
+    private final ServicoRepository servicoRepository;
+    private final FuncionarioAgendamentoRepository funcionarioAgendamentoRepository;
 
     public DisponibilidadeService(
             AgendamentoRepository agendamentoRepository,
             AgendaFuncionarioRepository agendaFuncionarioRepository,
             AgendaExcecaoRepository agendaExcecaoRepository,
-            SalaRepository salaRepository
+            SalaRepository salaRepository,
+            ServicoRepository servicoRepository,
+            FuncionarioAgendamentoRepository funcionarioAgendamentoRepository
     ) {
         this.agendamentoRepository = agendamentoRepository;
         this.agendaFuncionarioRepository = agendaFuncionarioRepository;
         this.agendaExcecaoRepository = agendaExcecaoRepository;
         this.salaRepository = salaRepository;
+        this.servicoRepository = servicoRepository;
+        this.funcionarioAgendamentoRepository = funcionarioAgendamentoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -88,6 +101,74 @@ public class DisponibilidadeService {
         List<HorarioDisponivelDto> horariosDeduplicados = new ArrayList<>(mapa.values());
         horariosDeduplicados.sort(Comparator.comparing(HorarioDisponivelDto::getHorario));
         return horariosDeduplicados;
+    }
+
+    @Transactional(readOnly = true)
+    public List<FuncionarioResponseDto> listarFuncionariosPorServico(Long servicoId) {
+        return agendaFuncionarioRepository.findAll().stream()
+                .map(AgendaFuncionario::getFuncionario)
+                .filter(Objects::nonNull)
+                .filter(funcionario -> atendeServico(funcionario, servicoId))
+                .distinct()
+                .sorted(Comparator.comparing(Funcionario::getId))
+                .map(FuncionarioMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<DiaDisponivelDto> calcularCalendario(String mes, Long servicoId, Long funcionarioId) {
+        YearMonth yearMonth = YearMonth.parse(mes);
+        List<DiaDisponivelDto> dias = new ArrayList<>();
+
+        for (int dia = 1; dia <= yearMonth.lengthOfMonth(); dia++) {
+            List<HorarioDisponivelDto> horarios = calcularHorariosDisponiveis(yearMonth.atDay(dia), servicoId, funcionarioId);
+            long livres = horarios.stream().filter(HorarioDisponivelDto::isDisponivel).count();
+            dias.add(new DiaDisponivelDto(yearMonth.atDay(dia).toString(), calcularStatus(horarios.size(), horarios.size() - livres)));
+        }
+        return dias;
+    }
+
+    @Transactional(readOnly = true)
+    public List<HorarioDisponivelDto> calcularHorariosDisponiveis(LocalDate data, Long servicoId, Long funcionarioId) {
+        Servico servico = servicoRepository.findById(servicoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Servico nao encontrado"));
+        int duracaoMinutos = servico.getTempoMedio() == null ? 60 : servico.getTempoMedio();
+        Integer diaSemana = obterDiaSemanaMySql(data);
+        Map<String, HorarioDisponivelDto> horarios = new LinkedHashMap<>();
+
+        agendaFuncionarioRepository.findByFuncionarioId(funcionarioId).stream()
+                .filter(agenda -> Objects.equals(agenda.getDiaSemana(), diaSemana))
+                .forEach(agenda -> {
+                    LocalTime horario = agenda.getHoraInicio();
+                    while (horario != null && agenda.getHoraFim() != null && !horario.plusMinutes(duracaoMinutos).isAfter(agenda.getHoraFim())) {
+                        LocalDateTime inicio = LocalDateTime.of(data, horario);
+                        LocalDateTime fim = inicio.plusMinutes(duracaoMinutos);
+                        boolean funcionarioOcupado = funcionarioAgendamentoRepository.existeConflitoFuncionario(funcionarioId, inicio, fim, 0L);
+                        Long salaId = funcionarioOcupado ? null : encontrarSalaLivre(servico, inicio, fim);
+                        HorarioDisponivelDto candidato = new HorarioDisponivelDto(horario.format(HORA_FORMATTER), salaId != null, salaId);
+                        horarios.merge(candidato.getHorario(), candidato, (existente, novo) -> novo.isDisponivel() ? novo : existente);
+                        horario = horario.plusHours(1);
+                    }
+                });
+
+        return horarios.values().stream()
+                .sorted(Comparator.comparing(HorarioDisponivelDto::getHorario))
+                .toList();
+    }
+
+    private boolean atendeServico(Funcionario funcionario, Long servicoId) {
+        return funcionario.getEspecialidades().stream()
+                .flatMap(especialidade -> especialidade.getServicos().stream())
+                .anyMatch(servico -> Objects.equals(servico.getId(), servicoId));
+    }
+
+    private Long encontrarSalaLivre(Servico servico, LocalDateTime inicio, LocalDateTime fim) {
+        return servico.getSalas().stream()
+                .sorted(Comparator.comparing(Sala::getId))
+                .filter(sala -> !agendamentoRepository.existeConflitoSala(sala.getId(), inicio, fim, 0L))
+                .map(Sala::getId)
+                .findFirst()
+                .orElse(null);
     }
 
     @Transactional(readOnly = true)

@@ -1,5 +1,7 @@
 package sptech.school.backend.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sptech.school.backend.entity.Agendamento;
@@ -79,8 +81,8 @@ public class AgendamentoService {
         return agendamentoRepository.save(salvo);
     }
 
-    public List<Agendamento> listar() {
-        return agendamentoRepository.findAll();
+    public Page<Agendamento> listar(Pageable pageable) {
+        return agendamentoRepository.findAll(pageable);
     }
 
     public Agendamento buscarPorId(Long id) {
@@ -88,12 +90,12 @@ public class AgendamentoService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Agendamento nao encontrado"));
     }
 
-    public List<Agendamento> listarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
-        return agendamentoRepository.findByPeriodo(inicio, fim);
+    public Page<Agendamento> listarPorPeriodo(LocalDateTime inicio, LocalDateTime fim, Long statusId, Pageable pageable) {
+        return agendamentoRepository.findByPeriodo(inicio, fim, statusId, pageable);
     }
 
-    public List<Agendamento> listarPorStatus(Long statusId) {
-        return agendamentoRepository.findByStatusId(statusId);
+    public Page<Agendamento> listarPorStatus(Long statusId, Pageable pageable) {
+        return agendamentoRepository.findByStatusId(statusId, pageable);
     }
 
     public List<Agendamento> listarPorCliente(Long clienteId) {
@@ -169,6 +171,14 @@ public class AgendamentoService {
         atendimentoServico.setValorUnitario(servico.getValor());
         atendimentoServico.setDescricao(servico.getDescricao());
         agendamento.getAtendimentoServicos().add(atendimentoServico);
+    }
+
+    @Transactional
+    public Agendamento atualizarStatus(Long id, Long statusId) {
+        Agendamento existente = buscarPorId(id);
+        Status status = buscarStatus(statusId);
+        existente.setStatus(status);
+        return agendamentoRepository.save(existente);
     }
 
     private Cliente buscarCliente(Long clienteId) {

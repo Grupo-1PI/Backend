@@ -1,5 +1,7 @@
 package sptech.school.backend.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +14,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> {
+
+    /** Quantos agendamentos (qualquer status) ocupam a sala informada. */
+    long countBySalaId(Long salaId);
 
     @Query("""
             select count(a) > 0
@@ -40,7 +45,23 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             @Param("fim") LocalDateTime fim
     );
 
+    @Query("""
+            select a
+            from Agendamento a
+            where a.dataHoraInicio < :fim
+              and a.dataHoraFim > :inicio
+              and (:statusId is null or a.status.id = :statusId)
+            """)
+    Page<Agendamento> findByPeriodo(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim,
+            @Param("statusId") Long statusId,
+            Pageable pageable
+    );
+
     List<Agendamento> findByStatusId(Long statusId);
+
+    Page<Agendamento> findByStatusId(Long statusId, Pageable pageable);
 
     List<Agendamento> findByClienteId(Long clienteId);
 

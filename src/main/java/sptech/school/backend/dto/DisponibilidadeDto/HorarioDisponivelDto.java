@@ -4,6 +4,7 @@ public class HorarioDisponivelDto {
 
     private String horario;
     private boolean disponivel;
+    private Long salaId;
 
     public HorarioDisponivelDto() {
     }
@@ -11,6 +12,12 @@ public class HorarioDisponivelDto {
     public HorarioDisponivelDto(String horario, boolean disponivel) {
         this.horario = horario;
         this.disponivel = disponivel;
+    }
+
+    public HorarioDisponivelDto(String horario, boolean disponivel, Long salaId) {
+        this.horario = horario;
+        this.disponivel = disponivel;
+        this.salaId = salaId;
     }
 
     public String getHorario() {
@@ -27,5 +34,13 @@ public class HorarioDisponivelDto {
 
     public void setDisponivel(boolean disponivel) {
         this.disponivel = disponivel;
+    }
+
+    public Long getSalaId() {
+        return salaId;
+    }
+
+    public void setSalaId(Long salaId) {
+        this.salaId = salaId;
     }
 }

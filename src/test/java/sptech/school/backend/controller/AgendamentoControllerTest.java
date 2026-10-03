@@ -9,7 +9,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import sptech.school.backend.exception.GlobalExceptionHandler;
@@ -66,48 +70,60 @@ class AgendamentoControllerTest {
     @DisplayName("Unidade: AgendamentoController | Cenario: get agendamentos | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200")
     @Test
     void getAgendamentos_deveRetornar200() throws Exception {
-        Mockito.when(agendamentoService.listar()).thenReturn(List.of(agendamento(1L)));
+        Mockito.when(agendamentoService.listar(Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(agendamento(1L))));
 
         mockMvc.perform(get("/agendamentos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].clienteNome").value("Cliente"));
+                .andExpect(jsonPath("$.content[0].clienteNome").value("Cliente"))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @DisplayName("Unidade: AgendamentoController | Cenario: get agendamentos por status | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200")
     @Test
     void getAgendamentosPorStatus_deveRetornar200() throws Exception {
-        Mockito.when(agendamentoService.listarPorStatus(1L)).thenReturn(List.of(agendamento(1L)));
+        Mockito.when(agendamentoService.listarPorStatus(Mockito.eq(1L), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(agendamento(1L))));
 
         mockMvc.perform(get("/agendamentos").param("statusId", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].statusNome").value("Agendado"));
+                .andExpect(jsonPath("$.content[0].statusNome").value("Agendado"));
     }
 
     @DisplayName("Unidade: AgendamentoController | Cenario: get agendamentos por periodo | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200")
     @Test
     void getAgendamentosPorPeriodo_deveRetornar200() throws Exception {
-        Mockito.when(agendamentoService.listarPorPeriodo(Mockito.any(LocalDateTime.class), Mockito.any(LocalDateTime.class)))
-                .thenReturn(List.of(agendamento(1L)));
+        Mockito.when(agendamentoService.listarPorPeriodo(
+                        Mockito.any(LocalDateTime.class),
+                        Mockito.any(LocalDateTime.class),
+                        Mockito.<Long>isNull(),
+                        Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(agendamento(1L))));
 
         mockMvc.perform(get("/agendamentos")
                         .param("inicio", "2026-06-09T08:00:00")
                         .param("fim", "2026-06-09T09:00:00"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(1));
     }
 
     @DisplayName("Unidade: AgendamentoController | Cenario: get agendamentos por periodo e status | Dados: dados preparados no arrange do teste | Verifica: deve filtrar status")
     @Test
     void getAgendamentosPorPeriodoEStatus_deveFiltrarStatus() throws Exception {
-        Mockito.when(agendamentoService.listarPorPeriodo(Mockito.any(LocalDateTime.class), Mockito.any(LocalDateTime.class)))
-                .thenReturn(List.of(agendamento(1L, 1L), agendamento(2L, 2L)));
+        Mockito.when(agendamentoService.listarPorPeriodo(
+                        Mockito.any(LocalDateTime.class),
+                        Mockito.any(LocalDateTime.class),
+                        Mockito.eq(1L),
+                        Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(agendamento(1L))));
 
         mockMvc.perform(get("/agendamentos")
                         .param("inicio", "2026-06-09T08:00:00")
                         .param("fim", "2026-06-09T10:00:00")
                         .param("statusId", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id").value(1));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].id").value(1));
     }
 
     @DisplayName("Unidade: AgendamentoController | Cenario: get agendamentos | Dados: quando inicio sem fim | Verifica: deve retornar 400")
@@ -115,6 +131,18 @@ class AgendamentoControllerTest {
     void getAgendamentos_deveRetornar400_quandoInicioSemFim() throws Exception {
         mockMvc.perform(get("/agendamentos")
                         .param("inicio", "2026-06-09T08:00:00"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @DisplayName("Unidade: AgendamentoController | Cenario: get agendamentos | Dados: quando size invalido | Verifica: deve retornar 400")
+    @Test
+    void getAgendamentos_deveRetornar400_quandoSizeInvalido() throws Exception {
+        mockMvc.perform(get("/agendamentos")
+                        .param("size", "0"))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/agendamentos")
+                        .param("page", "-1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -141,12 +169,13 @@ class AgendamentoControllerTest {
     @DisplayName("Unidade: AgendamentoController | Cenario: get meus agendamentos | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200")
     @Test
     void getMeusAgendamentos_deveRetornar200() throws Exception {
-        Cliente cliente = new Cliente();
-        cliente.setId(1L);
-        Mockito.when(clienteService.buscarPorEmailUsuario("cliente@email.com")).thenReturn(cliente);
+        Authentication principal = UsernamePasswordAuthenticationToken.authenticated(
+                "cliente@email.com", null, List.of());
+
+        Mockito.when(agendamentoService.clientePertenceAoUsuario(1L, "cliente@email.com")).thenReturn(true);
         Mockito.when(agendamentoService.listarPorCliente(1L)).thenReturn(List.of(agendamento(1L)));
 
-        mockMvc.perform(get("/agendamentos/meus").principal(() -> "cliente@email.com"))
+        mockMvc.perform(get("/agendamentos/meus/1").principal(principal))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1));
     }

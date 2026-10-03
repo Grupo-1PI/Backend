@@ -8,6 +8,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import sptech.school.backend.entity.Agendamento;
 import sptech.school.backend.entity.Cliente;
 import sptech.school.backend.entity.Funcionario;
@@ -144,15 +148,16 @@ class AgendamentoServiceTest {
         );
     }
 
-    @DisplayName("Unidade: AgendamentoService | Cenario: listar | Dados: dados preparados no arrange do teste | Verifica: deve retornar todos")
+    @DisplayName("Unidade: AgendamentoService | Cenario: listar | Dados: dados preparados no arrange do teste | Verifica: deve retornar a pagina")
     @Test
     void listar_deveRetornarTodos() {
-        List<Agendamento> agendamentos = List.of(agendamento("Lista"));
-        Mockito.when(agendamentoRepository.findAll()).thenReturn(agendamentos);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Agendamento> pagina = new PageImpl<>(List.of(agendamento("Lista")));
+        Mockito.when(agendamentoRepository.findAll(pageable)).thenReturn(pagina);
 
-        List<Agendamento> resultado = service.listar();
+        Page<Agendamento> resultado = service.listar(pageable);
 
-        Assertions.assertEquals(agendamentos, resultado);
+        Assertions.assertEquals(pagina, resultado);
     }
 
     @DisplayName("Unidade: AgendamentoService | Cenario: listar por periodo | Dados: dados preparados no arrange do teste | Verifica: deve retornar filtrado")
@@ -160,23 +165,25 @@ class AgendamentoServiceTest {
     void listarPorPeriodo_deveRetornarFiltrado() {
         LocalDateTime inicio = LocalDateTime.of(2026, 6, 9, 8, 0);
         LocalDateTime fim = LocalDateTime.of(2026, 6, 9, 9, 0);
-        List<Agendamento> agendamentos = List.of(agendamento("Periodo"));
-        Mockito.when(agendamentoRepository.findByPeriodo(inicio, fim)).thenReturn(agendamentos);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Agendamento> pagina = new PageImpl<>(List.of(agendamento("Periodo")));
+        Mockito.when(agendamentoRepository.findByPeriodo(inicio, fim, null, pageable)).thenReturn(pagina);
 
-        List<Agendamento> resultado = service.listarPorPeriodo(inicio, fim);
+        Page<Agendamento> resultado = service.listarPorPeriodo(inicio, fim, null, pageable);
 
-        Assertions.assertEquals(agendamentos, resultado);
+        Assertions.assertEquals(pagina, resultado);
     }
 
     @DisplayName("Unidade: AgendamentoService | Cenario: listar por status | Dados: dados preparados no arrange do teste | Verifica: deve retornar filtrado")
     @Test
     void listarPorStatus_deveRetornarFiltrado() {
-        List<Agendamento> agendamentos = List.of(agendamento("Status"));
-        Mockito.when(agendamentoRepository.findByStatusId(1L)).thenReturn(agendamentos);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Agendamento> pagina = new PageImpl<>(List.of(agendamento("Status")));
+        Mockito.when(agendamentoRepository.findByStatusId(1L, pageable)).thenReturn(pagina);
 
-        List<Agendamento> resultado = service.listarPorStatus(1L);
+        Page<Agendamento> resultado = service.listarPorStatus(1L, pageable);
 
-        Assertions.assertEquals(agendamentos, resultado);
+        Assertions.assertEquals(pagina, resultado);
     }
 
     @DisplayName("Unidade: AgendamentoService | Cenario: listar por cliente | Dados: dados preparados no arrange do teste | Verifica: deve retornar filtrado")

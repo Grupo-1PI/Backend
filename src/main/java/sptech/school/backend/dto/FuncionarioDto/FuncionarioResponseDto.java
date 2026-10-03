@@ -1,6 +1,8 @@
 package sptech.school.backend.dto.FuncionarioDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import sptech.school.backend.dto.EnderecoDto.EnderecoDto;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +15,7 @@ public class FuncionarioResponseDto {
     private String telefone;
     private String cargo;
     private List<String> especialidades = new ArrayList<>();
+    private EnderecoDto endereco;
 
     public Long getId() {
         return id;
@@ -60,5 +63,13 @@ public class FuncionarioResponseDto {
 
     public void setEspecialidades(List<String> especialidades) {
         this.especialidades = especialidades;
+    }
+
+    public EnderecoDto getEndereco() {
+        return endereco;
+    }
+
+    public void setEndereco(EnderecoDto endereco) {
+        this.endereco = endereco;
     }
 }

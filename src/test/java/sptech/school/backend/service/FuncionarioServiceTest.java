@@ -18,14 +18,19 @@ import sptech.school.backend.entity.Endereco;
 import sptech.school.backend.entity.Especialidade;
 import sptech.school.backend.entity.Funcionario;
 import sptech.school.backend.entity.Usuario;
+import sptech.school.backend.exception.ConflitoException;
 import sptech.school.backend.exception.RecursoNaoEncontradoException;
 import sptech.school.backend.repository.CargoRepository;
 import sptech.school.backend.repository.EnderecoRepository;
 import sptech.school.backend.repository.EspecialidadeRepository;
+import sptech.school.backend.repository.AgendaExcecaoRepository;
+import sptech.school.backend.repository.AgendaFuncionarioRepository;
+import sptech.school.backend.repository.FuncionarioAgendamentoRepository;
 import sptech.school.backend.repository.FuncionarioRepository;
 import sptech.school.backend.repository.UsuarioRepository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +52,15 @@ class FuncionarioServiceTest {
 
     @Mock
     private EspecialidadeRepository especialidadeRepository;
+
+    @Mock
+    private FuncionarioAgendamentoRepository funcionarioAgendamentoRepository;
+
+    @Mock
+    private AgendaFuncionarioRepository agendaFuncionarioRepository;
+
+    @Mock
+    private AgendaExcecaoRepository agendaExcecaoRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -224,15 +238,36 @@ class FuncionarioServiceTest {
         Assertions.assertThrows(RecursoNaoEncontradoException.class, () -> service.atualizar(1L, atualizacaoDto(2L, List.of())));
     }
 
-    @DisplayName("Unidade: FuncionarioService | Cenario: deletar | Dados: dados preparados no arrange do teste | Verifica: deve deletar")
+    @DisplayName("Unidade: FuncionarioService | Cenario: deletar | Dados: funcionario sem dependencias | Verifica: deve deletar")
     @Test
     void deletar_deveDeletar() {
         Funcionario funcionario = funcionario(1L);
+        funcionario.setEspecialidades(new ArrayList<>());
         Mockito.when(funcionarioRepository.findById(1L)).thenReturn(Optional.of(funcionario));
+        Mockito.when(funcionarioAgendamentoRepository.countByFuncionarioId(1L)).thenReturn(0L);
+        Mockito.when(agendaFuncionarioRepository.countByFuncionarioId(1L)).thenReturn(0L);
+        Mockito.when(agendaExcecaoRepository.countByFuncionarioId(1L)).thenReturn(0L);
 
         service.deletar(1L);
 
         Mockito.verify(funcionarioRepository).delete(funcionario);
+    }
+
+    @DisplayName("Unidade: FuncionarioService | Cenario: deletar | Dados: funcionario com agendamentos e horarios | Verifica: deve lancar conflito detailing os vinculos")
+    @Test
+    void deletar_deveLancarConflito_quandoPossuiDependencias() {
+        Funcionario funcionario = funcionario(1L);
+        Mockito.when(funcionarioRepository.findById(1L)).thenReturn(Optional.of(funcionario));
+        Mockito.when(funcionarioAgendamentoRepository.countByFuncionarioId(1L)).thenReturn(4L);
+        Mockito.when(agendaFuncionarioRepository.countByFuncionarioId(1L)).thenReturn(2L);
+        Mockito.when(agendaExcecaoRepository.countByFuncionarioId(1L)).thenReturn(0L);
+
+        ConflitoException erro = Assertions.assertThrows(
+                ConflitoException.class, () -> service.deletar(1L));
+
+        Assertions.assertTrue(erro.getMessage().contains("4 agendamentos"));
+        Assertions.assertTrue(erro.getMessage().contains("2 horários de trabalho"));
+        Mockito.verify(funcionarioRepository, Mockito.never()).delete(Mockito.any());
     }
 
     @DisplayName("Unidade: FuncionarioService | Cenario: deletar | Dados: quando nao existe | Verifica: deve lancar")
@@ -278,8 +313,13 @@ class FuncionarioServiceTest {
     private Funcionario funcionario(Long id) {
         Funcionario funcionario = new Funcionario();
         funcionario.setId(id);
+        Usuario usuario = new Usuario();
+        usuario.setId(id);
+        usuario.setNome("Funcionario Teste");
+        usuario.setEmail("funcionario.teste@taotenshin.com");
+        funcionario.setUsuario(usuario);
         funcionario.setCargo(cargo(1L, "Cargo"));
-        funcionario.setEspecialidades(List.of(especialidade(1L)));
+        funcionario.setEspecialidades(new ArrayList<>(List.of(especialidade(1L))));
         return funcionario;
     }
 

@@ -8,5 +8,7 @@ public interface AgendaFuncionarioRepository extends JpaRepository<AgendaFuncion
 
     List<AgendaFuncionario> findByFuncionarioId(Long funcionarioId);
 
+    long countByFuncionarioId(Long funcionarioId);
+
     void deleteByFuncionarioId(Long funcionarioId);
 }

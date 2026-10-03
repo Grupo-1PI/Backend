@@ -5,22 +5,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import sptech.school.backend.dto.AgendamentoDto.AgendamentoRequestDto;
 import sptech.school.backend.dto.AgendamentoDto.AgendamentoResponseDto;
+import sptech.school.backend.dto.PaginaDto.PaginaResponseDto;
 import sptech.school.backend.entity.Agendamento;
 import sptech.school.backend.mapper.AgendamentoMapper;
 import sptech.school.backend.service.AgendamentoService;
@@ -67,11 +64,12 @@ public class AgendamentoController {
                 .body(AgendamentoMapper.toResponse(salvo));
     }
 
-    @Operation(summary = "Listar agendamentos", description = "Lista agendamentos, com filtros opcionais por periodo e status.")
-    @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    @Operation(summary = "Listar agendamentos", description = "Lista agendamentos paginados, com filtros opcionais por periodo e status.")
+    @ApiResponse(responseCode = "200", description = "Pagina retornada com sucesso")
+    @ApiResponse(responseCode = "400", description = "Parametros invalidos")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('CRUD_AGENDAMENTO', 'REALIZAR_ATENDIMENTO')")
-    public ResponseEntity<List<AgendamentoResponseDto>> listar(
+    public ResponseEntity<PaginaResponseDto<AgendamentoResponseDto>> listar(
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             LocalDateTime inicio,
@@ -81,29 +79,37 @@ public class AgendamentoController {
             LocalDateTime fim,
 
             @RequestParam(required = false)
-            Long statusId
-    ) {
-        List<Agendamento> agendamentos;
+            Long statusId,
 
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "50")
+            int size
+    ) {
         if ((inicio == null) != (fim == null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "inicio e fim devem ser informados juntos");
         }
 
+        if (page < 0 || size < 1 || size > 500) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page deve ser maior ou igual a 0 e size entre 1 e 500");
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("dataHoraInicio").ascending());
+
+        Page<Agendamento> agendamentos;
+
         if (inicio != null) {
-            agendamentos = service.listarPorPeriodo(inicio, fim);
+            agendamentos = service.listarPorPeriodo(inicio, fim, statusId, pageable);
         } else if (statusId != null) {
-            agendamentos = service.listarPorStatus(statusId);
+            agendamentos = service.listarPorStatus(statusId, pageable);
         } else {
-            agendamentos = service.listar();
+            agendamentos = service.listar(pageable);
         }
 
-        if (statusId != null && inicio != null) {
-            agendamentos = agendamentos.stream()
-                    .filter(agendamento -> agendamento.getStatus().getId().equals(statusId))
-                    .toList();
-        }
+        Page<AgendamentoResponseDto> resposta = agendamentos.map(AgendamentoMapper::toResponse);
 
-        return ResponseEntity.ok(toResponseList(agendamentos));
+        return ResponseEntity.ok(PaginaResponseDto.de(resposta));
     }
 
 
@@ -155,6 +161,19 @@ public class AgendamentoController {
                 dto.getStatusId()
         );
 
+        return ResponseEntity.ok(AgendamentoMapper.toResponse(atualizado));
+    }
+
+    @Operation(summary = "Atualizar status do agendamento", description = "Atualiza apenas o status de um agendamento existente.")
+    @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso")
+    @ApiResponse(responseCode = "404", description = "Nao encontrado")
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAuthority('CRUD_AGENDAMENTO')")
+    public ResponseEntity<AgendamentoResponseDto> atualizarStatus(
+            @PathVariable Long id,
+            @RequestParam Long statusId
+    ) {
+        Agendamento atualizado = service.atualizarStatus(id, statusId);
         return ResponseEntity.ok(AgendamentoMapper.toResponse(atualizado));
     }
 

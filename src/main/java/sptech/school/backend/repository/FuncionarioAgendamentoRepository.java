@@ -26,4 +26,7 @@ public interface FuncionarioAgendamentoRepository extends JpaRepository<Funciona
     );
 
     List<FuncionarioAgendamento> findByAgendamentoId(Long agendamentoId);
+
+    /** Quantos agendamentos o funcionario informado já atende. */
+    long countByFuncionarioId(Long funcionarioId);
 }

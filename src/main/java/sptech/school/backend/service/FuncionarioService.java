@@ -13,12 +13,17 @@ import sptech.school.backend.entity.Endereco;
 import sptech.school.backend.entity.Especialidade;
 import sptech.school.backend.entity.Funcionario;
 import sptech.school.backend.entity.Usuario;
+import sptech.school.backend.exception.ConflitoException;
 import sptech.school.backend.exception.RecursoNaoEncontradoException;
+import sptech.school.backend.repository.AgendaExcecaoRepository;
+import sptech.school.backend.repository.AgendaFuncionarioRepository;
 import sptech.school.backend.repository.CargoRepository;
 import sptech.school.backend.repository.EnderecoRepository;
 import sptech.school.backend.repository.EspecialidadeRepository;
+import sptech.school.backend.repository.FuncionarioAgendamentoRepository;
 import sptech.school.backend.repository.FuncionarioRepository;
 import sptech.school.backend.repository.UsuarioRepository;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,6 +34,9 @@ public class FuncionarioService {
     private final CargoRepository cargoRepository;
     private final EnderecoRepository enderecoRepository;
     private final EspecialidadeRepository especialidadeRepository;
+    private final FuncionarioAgendamentoRepository funcionarioAgendamentoRepository;
+    private final AgendaFuncionarioRepository agendaFuncionarioRepository;
+    private final AgendaExcecaoRepository agendaExcecaoRepository;
     private final PasswordEncoder passwordEncoder;
 
     public FuncionarioService(
@@ -37,6 +45,9 @@ public class FuncionarioService {
             CargoRepository cargoRepository,
             EnderecoRepository enderecoRepository,
             EspecialidadeRepository especialidadeRepository,
+            FuncionarioAgendamentoRepository funcionarioAgendamentoRepository,
+            AgendaFuncionarioRepository agendaFuncionarioRepository,
+            AgendaExcecaoRepository agendaExcecaoRepository,
             PasswordEncoder passwordEncoder
     ) {
         this.funcionarioRepository = funcionarioRepository;
@@ -44,6 +55,9 @@ public class FuncionarioService {
         this.cargoRepository = cargoRepository;
         this.enderecoRepository = enderecoRepository;
         this.especialidadeRepository = especialidadeRepository;
+        this.funcionarioAgendamentoRepository = funcionarioAgendamentoRepository;
+        this.agendaFuncionarioRepository = agendaFuncionarioRepository;
+        this.agendaExcecaoRepository = agendaExcecaoRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -89,6 +103,42 @@ public class FuncionarioService {
     @Transactional
     public Funcionario atualizar(Long id, FuncionarioAtualizacaoDto dto) {
         Funcionario funcionario = buscarPorId(id);
+        Usuario usuario = funcionario.getUsuario();
+
+        if (dto.getNome() != null && !dto.getNome().trim().isEmpty()) {
+            usuario.setNome(dto.getNome().trim());
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
+            usuario.setEmail(dto.getEmail().trim());
+        }
+
+        if (dto.getTelefone() != null && !dto.getTelefone().trim().isEmpty()) {
+            usuario.setTelefone(dto.getTelefone().trim());
+        }
+
+        if (dto.getDataNascimento() != null) {
+            usuario.setDataNascimento(dto.getDataNascimento());
+        }
+
+        if (dto.getEndereco() != null) {
+            Endereco atual = usuario.getEndereco();
+            Endereco novos = toEndereco(dto.getEndereco());
+
+            if (atual != null) {
+                atual.setCep(novos.getCep());
+                atual.setLogradouro(novos.getLogradouro());
+                atual.setBairro(novos.getBairro());
+                atual.setCidade(novos.getCidade());
+                atual.setUf(novos.getUf());
+                atual.setNumero(novos.getNumero());
+                atual.setComplemento(novos.getComplemento());
+            } else {
+                usuario.setEndereco(enderecoRepository.save(novos));
+            }
+        }
+
+        usuarioRepository.save(usuario);
 
         if (dto.getCargoId() != null) {
             Cargo cargo = cargoRepository.findById(dto.getCargoId())
@@ -106,6 +156,39 @@ public class FuncionarioService {
     @Transactional
     public void deletar(Long id) {
         Funcionario funcionario = buscarPorId(id);
+
+        long agendamentos = funcionarioAgendamentoRepository.countByFuncionarioId(id);
+        long horarios = agendaFuncionarioRepository.countByFuncionarioId(id);
+        long bloqueios = agendaExcecaoRepository.countByFuncionarioId(id);
+        long especialidades = funcionario.getEspecialidades() != null
+                ? funcionario.getEspecialidades().size() : 0;
+
+        if (agendamentos > 0 || horarios > 0 || bloqueios > 0 || especialidades > 0) {
+            List<String> motivos = new ArrayList<>();
+            if (agendamentos > 0) {
+                motivos.add(agendamentos + (agendamentos == 1 ? " agendamento" : " agendamentos"));
+            }
+            if (horarios > 0) {
+                motivos.add(horarios + (horarios == 1 ? " horário de trabalho" : " horários de trabalho"));
+            }
+            if (bloqueios > 0) {
+                motivos.add(bloqueios + (bloqueios == 1 ? " bloqueio de agenda" : " bloqueios de agenda"));
+            }
+            if (especialidades > 0) {
+                motivos.add(especialidades + (especialidades == 1 ? " especialidade" : " especialidades"));
+            }
+
+            String nome = funcionario.getUsuario() != null
+                    ? funcionario.getUsuario().getNome()
+                    : "funcionário";
+
+            throw new ConflitoException(
+                    "Não é possível excluir o funcionário \"" + nome
+                            + "\" porque ele possui " + String.join(", ", motivos)
+                            + ". Remova os vínculos ou cancele os agendamentos antes de excluir."
+            );
+        }
+
         funcionarioRepository.delete(funcionario);
     }
 

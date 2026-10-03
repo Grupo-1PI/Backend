@@ -10,8 +10,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sptech.school.backend.dto.SalaDto.SalaCriacaoDto;
 import sptech.school.backend.entity.Sala;
+import sptech.school.backend.exception.ConflitoException;
 import sptech.school.backend.exception.RecursoNaoEncontradoException;
+import sptech.school.backend.repository.AgendamentoRepository;
 import sptech.school.backend.repository.SalaRepository;
+import sptech.school.backend.repository.ServicoRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +25,12 @@ class SalaServiceTest {
 
     @Mock
     private SalaRepository salaRepository;
+
+    @Mock
+    private AgendamentoRepository agendamentoRepository;
+
+    @Mock
+    private ServicoRepository servicoRepository;
 
     @InjectMocks
     private SalaService service;
@@ -92,15 +101,34 @@ class SalaServiceTest {
         );
     }
 
-    @DisplayName("Unidade: SalaService | Cenario: deletar | Dados: dados preparados no arrange do teste | Verifica: deve deletar sala")
+    @DisplayName("Unidade: SalaService | Cenario: deletar | Dados: sala sem dependencias | Verifica: deve deletar sala")
     @Test
     void deletar_deveDeletarSala() {
         Sala sala = sala(1L, "Sala 1");
         Mockito.when(salaRepository.findById(1L)).thenReturn(Optional.of(sala));
+        Mockito.when(agendamentoRepository.countBySalaId(1L)).thenReturn(0L);
+        Mockito.when(servicoRepository.countBySalasId(1L)).thenReturn(0L);
 
         service.deletar(1L);
 
         Mockito.verify(salaRepository).delete(sala);
+    }
+
+    @DisplayName("Unidade: SalaService | Cenario: deletar | Dados: sala com agendamento e servico vinculado | Verifica: deve lancar conflito detailing os vinculos")
+    @Test
+    void deletar_deveLancarConflito_quandoPossuiDependencias() {
+        Sala sala = sala(1L, "Sala Paulista");
+        Mockito.when(salaRepository.findById(1L)).thenReturn(Optional.of(sala));
+        Mockito.when(agendamentoRepository.countBySalaId(1L)).thenReturn(3L);
+        Mockito.when(servicoRepository.countBySalasId(1L)).thenReturn(2L);
+
+        ConflitoException erro = Assertions.assertThrows(
+                ConflitoException.class, () -> service.deletar(1L));
+
+        Assertions.assertTrue(erro.getMessage().contains("Sala Paulista"));
+        Assertions.assertTrue(erro.getMessage().contains("3 agendamentos"));
+        Assertions.assertTrue(erro.getMessage().contains("2 serviços vinculados"));
+        Mockito.verify(salaRepository, Mockito.never()).delete(Mockito.any());
     }
 
     @DisplayName("Unidade: SalaService | Cenario: deletar | Dados: quando nao existe | Verifica: deve lancar")
