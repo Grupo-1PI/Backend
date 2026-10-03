@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sptech.school.backend.dto.AgendaDto.AgendaExcecaoDto;
+import sptech.school.backend.dto.AgendaDto.AgendaExcecaoListagemDto;
 import sptech.school.backend.dto.AgendaDto.AgendaFuncionarioDto;
 import sptech.school.backend.dto.AgendaDto.AgendaFuncionarioListagemDto;
 import sptech.school.backend.entity.AgendaExcecao;
@@ -42,15 +43,18 @@ class AgendaFuncionarioServiceTest {
     @InjectMocks
     private AgendaFuncionarioService service;
 
-    @DisplayName("Unidade: AgendaFuncionarioService | Cenario: listar por funcionario | Dados: dados preparados no arrange do teste | Verifica: deve retornar lista")
+    @DisplayName("Unidade: AgendaFuncionarioService | Cenario: listar por funcionario | Dados: dados preparados no arrange do teste | Verifica: deve retornar lista em DTO")
     @Test
     void listarPorFuncionario_deveRetornarLista() {
         List<AgendaFuncionario> agendas = List.of(agenda(1L, funcionario(1L), 2));
         Mockito.when(agendaFuncionarioRepository.findByFuncionarioId(1L)).thenReturn(agendas);
 
-        List<AgendaFuncionario> resultado = service.listarPorFuncionario(1L);
+        List<AgendaFuncionarioListagemDto.AgendaItemDto> resultado = service.listarPorFuncionario(1L);
 
-        Assertions.assertEquals(agendas, resultado);
+        Assertions.assertEquals(1, resultado.size());
+        Assertions.assertEquals(1L, resultado.get(0).getId());
+        Assertions.assertEquals(2, resultado.get(0).getDiaSemana());
+        Assertions.assertEquals("08:00", resultado.get(0).getHoraInicio());
     }
 
     @DisplayName("Unidade: AgendaFuncionarioService | Cenario: criar | Dados: dados preparados no arrange do teste | Verifica: deve salvar agenda")
@@ -62,11 +66,11 @@ class AgendaFuncionarioServiceTest {
         Mockito.when(agendaFuncionarioRepository.save(Mockito.any(AgendaFuncionario.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        AgendaFuncionario resultado = service.criar(dto);
+        AgendaFuncionarioListagemDto.AgendaItemDto resultado = service.criar(dto);
 
-        Assertions.assertEquals(funcionario, resultado.getFuncionario());
         Assertions.assertEquals(2, resultado.getDiaSemana());
-        Assertions.assertEquals(LocalTime.of(8, 0), resultado.getHoraInicio());
+        Assertions.assertEquals("08:00", resultado.getHoraInicio());
+        Mockito.verify(agendaFuncionarioRepository).save(Mockito.any(AgendaFuncionario.class));
     }
 
     @DisplayName("Unidade: AgendaFuncionarioService | Cenario: criar | Dados: quando funcionario nao existe | Verifica: deve lancar")
@@ -87,12 +91,11 @@ class AgendaFuncionarioServiceTest {
         Mockito.when(funcionarioRepository.findById(2L)).thenReturn(Optional.of(funcionario));
         Mockito.when(agendaFuncionarioRepository.save(existente)).thenReturn(existente);
 
-        AgendaFuncionario resultado = service.atualizar(1L, dto);
+        AgendaFuncionarioListagemDto.AgendaItemDto resultado = service.atualizar(1L, dto);
 
-        Assertions.assertEquals(funcionario, resultado.getFuncionario());
         Assertions.assertEquals(3, resultado.getDiaSemana());
-        Assertions.assertEquals(LocalTime.of(9, 0), resultado.getHoraInicio());
-        Assertions.assertEquals(LocalTime.of(11, 0), resultado.getHoraFim());
+        Assertions.assertEquals("09:00", resultado.getHoraInicio());
+        Assertions.assertEquals("11:00", resultado.getHoraFim());
     }
 
     @DisplayName("Unidade: AgendaFuncionarioService | Cenario: atualizar | Dados: quando nao existe | Verifica: deve lancar")
@@ -131,11 +134,11 @@ class AgendaFuncionarioServiceTest {
         Mockito.when(agendaExcecaoRepository.save(Mockito.any(AgendaExcecao.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        AgendaExcecao resultado = service.criarExcecao(dto);
+        AgendaExcecaoListagemDto resultado = service.criarExcecao(dto);
 
-        Assertions.assertEquals(funcionario, resultado.getFuncionario());
         Assertions.assertEquals(LocalDate.of(2026, 6, 9), resultado.getData());
         Assertions.assertFalse(resultado.getDisponivel());
+        Mockito.verify(agendaExcecaoRepository).save(Mockito.any(AgendaExcecao.class));
     }
 
     @DisplayName("Unidade: AgendaFuncionarioService | Cenario: criar excecao | Dados: quando funcionario nao existe | Verifica: deve lancar")
@@ -165,15 +168,23 @@ class AgendaFuncionarioServiceTest {
         Mockito.verify(agendaExcecaoRepository, Mockito.never()).deleteById(Mockito.anyLong());
     }
 
-    @DisplayName("Unidade: AgendaFuncionarioService | Cenario: listar excecoes por funcionario | Dados: dados preparados no arrange do teste | Verifica: deve retornar lista")
+    @DisplayName("Unidade: AgendaFuncionarioService | Cenario: listar excecoes por funcionario | Dados: dados preparados no arrange do teste | Verifica: deve retornar lista em DTO")
     @Test
     void listarExcecoesPorFuncionario_deveRetornarLista() {
-        List<AgendaExcecao> excecoes = List.of(new AgendaExcecao());
-        Mockito.when(agendaExcecaoRepository.findByFuncionarioId(1L)).thenReturn(excecoes);
+        AgendaExcecao excecao = new AgendaExcecao();
+        excecao.setId(1L);
+        excecao.setData(LocalDate.of(2026, 6, 9));
+        excecao.setHoraInicio(LocalTime.of(8, 0));
+        excecao.setHoraFim(LocalTime.of(12, 0));
+        excecao.setDisponivel(false);
+        Mockito.when(agendaExcecaoRepository.findByFuncionarioId(1L)).thenReturn(List.of(excecao));
 
-        List<AgendaExcecao> resultado = service.listarExcecoesPorFuncionario(1L);
+        List<AgendaExcecaoListagemDto> resultado = service.listarExcecoesPorFuncionario(1L);
 
-        Assertions.assertEquals(excecoes, resultado);
+        Assertions.assertEquals(1, resultado.size());
+        Assertions.assertEquals(1L, resultado.get(0).getId());
+        Assertions.assertEquals(LocalDate.of(2026, 6, 9), resultado.get(0).getData());
+        Assertions.assertFalse(resultado.get(0).getDisponivel());
     }
 
     @DisplayName("Unidade: AgendaFuncionarioService | Cenario: listar todos com agenda | Dados: dados preparados no arrange do teste | Verifica: deve retornar lista agrupada")

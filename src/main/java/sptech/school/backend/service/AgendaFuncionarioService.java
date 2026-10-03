@@ -3,6 +3,7 @@ package sptech.school.backend.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sptech.school.backend.dto.AgendaDto.AgendaExcecaoDto;
+import sptech.school.backend.dto.AgendaDto.AgendaExcecaoListagemDto;
 import sptech.school.backend.dto.AgendaDto.AgendaFuncionarioDto;
 import sptech.school.backend.dto.AgendaDto.AgendaFuncionarioListagemDto;
 import sptech.school.backend.entity.AgendaExcecao;
@@ -32,8 +33,22 @@ public class AgendaFuncionarioService {
         this.funcionarioRepository = funcionarioRepository;
     }
 
-    public List<AgendaFuncionario> listarPorFuncionario(Long funcionarioId) {
-        return agendaFuncionarioRepository.findByFuncionarioId(funcionarioId);
+    /**
+     * Lista as agendas de um_funcionario como DTO. Nao devolver a entidade:
+     * AgendaFuncionario -> Funcionario -> Cargo -> funcionarios -> Funcionario
+     * gera um grafo ciclico que trunca o JSON da resposta.
+     */
+    public List<AgendaFuncionarioListagemDto.AgendaItemDto> listarPorFuncionario(Long funcionarioId) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        return agendaFuncionarioRepository.findByFuncionarioId(funcionarioId).stream()
+                .map(agenda -> new AgendaFuncionarioListagemDto.AgendaItemDto(
+                        agenda.getId(),
+                        agenda.getDiaSemana(),
+                        agenda.getHoraInicio().format(formatter),
+                        agenda.getHoraFim().format(formatter)
+                ))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -68,19 +83,19 @@ public class AgendaFuncionarioService {
     }
 
     @Transactional
-    public AgendaFuncionario criar(AgendaFuncionarioDto dto) {
+    public AgendaFuncionarioListagemDto.AgendaItemDto criar(AgendaFuncionarioDto dto) {
         AgendaFuncionario agenda = new AgendaFuncionario();
         aplicarDados(agenda, dto);
-        return agendaFuncionarioRepository.save(agenda);
+        return toItemDto(agendaFuncionarioRepository.save(agenda));
     }
 
     @Transactional
-    public AgendaFuncionario atualizar(Long id, AgendaFuncionarioDto dto) {
+    public AgendaFuncionarioListagemDto.AgendaItemDto atualizar(Long id, AgendaFuncionarioDto dto) {
         AgendaFuncionario agenda = agendaFuncionarioRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Agenda nao encontrada"));
 
         aplicarDados(agenda, dto);
-        return agendaFuncionarioRepository.save(agenda);
+        return toItemDto(agendaFuncionarioRepository.save(agenda));
     }
 
     @Transactional
@@ -93,10 +108,10 @@ public class AgendaFuncionarioService {
     }
 
     @Transactional
-    public AgendaExcecao criarExcecao(AgendaExcecaoDto dto) {
+    public AgendaExcecaoListagemDto criarExcecao(AgendaExcecaoDto dto) {
         AgendaExcecao excecao = new AgendaExcecao();
         aplicarDadosExcecao(excecao, dto);
-        return agendaExcecaoRepository.save(excecao);
+        return toExcecaoDto(agendaExcecaoRepository.save(excecao));
     }
 
     @Transactional
@@ -108,8 +123,34 @@ public class AgendaFuncionarioService {
         agendaExcecaoRepository.deleteById(id);
     }
 
-    public List<AgendaExcecao> listarExcecoesPorFuncionario(Long funcionarioId) {
-        return agendaExcecaoRepository.findByFuncionarioId(funcionarioId);
+    /**
+     * Excecoes de um_funcionario em DTO, pelo mesmo motivo de listarPorFuncionario:
+     * a entidade AgendaExcecao expoe Funcionario e quebra a serializacao.
+     */
+    public List<AgendaExcecaoListagemDto> listarExcecoesPorFuncionario(Long funcionarioId) {
+        return agendaExcecaoRepository.findByFuncionarioId(funcionarioId).stream()
+                .map(this::toExcecaoDto)
+                .toList();
+    }
+
+    private AgendaFuncionarioListagemDto.AgendaItemDto toItemDto(AgendaFuncionario agenda) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        return new AgendaFuncionarioListagemDto.AgendaItemDto(
+                agenda.getId(),
+                agenda.getDiaSemana(),
+                agenda.getHoraInicio().format(formatter),
+                agenda.getHoraFim().format(formatter)
+        );
+    }
+
+    private AgendaExcecaoListagemDto toExcecaoDto(AgendaExcecao excecao) {
+        return new AgendaExcecaoListagemDto(
+                excecao.getId(),
+                excecao.getData(),
+                excecao.getHoraInicio(),
+                excecao.getHoraFim(),
+                excecao.getDisponivel()
+        );
     }
 
     private void aplicarDados(AgendaFuncionario agenda, AgendaFuncionarioDto dto) {
