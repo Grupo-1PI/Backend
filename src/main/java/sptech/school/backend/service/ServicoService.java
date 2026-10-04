@@ -5,10 +5,14 @@ import org.springframework.transaction.annotation.Transactional;
 import sptech.school.backend.dto.ServicoDto.ServicoCriacaoDto;
 import sptech.school.backend.entity.Sala;
 import sptech.school.backend.entity.Servico;
+import sptech.school.backend.exception.ConflitoException;
 import sptech.school.backend.exception.RecursoNaoEncontradoException;
+import sptech.school.backend.repository.AtendimentoServicoRepository;
+import sptech.school.backend.repository.EspecialidadeRepository;
 import sptech.school.backend.repository.SalaRepository;
 import sptech.school.backend.repository.ServicoRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -16,10 +20,19 @@ public class ServicoService {
 
     private final ServicoRepository servicoRepository;
     private final SalaRepository salaRepository;
+    private final AtendimentoServicoRepository atendimentoServicoRepository;
+    private final EspecialidadeRepository especialidadeRepository;
 
-    public ServicoService(ServicoRepository servicoRepository, SalaRepository salaRepository) {
+    public ServicoService(
+            ServicoRepository servicoRepository,
+            SalaRepository salaRepository,
+            AtendimentoServicoRepository atendimentoServicoRepository,
+            EspecialidadeRepository especialidadeRepository
+    ) {
         this.servicoRepository = servicoRepository;
         this.salaRepository = salaRepository;
+        this.atendimentoServicoRepository = atendimentoServicoRepository;
+        this.especialidadeRepository = especialidadeRepository;
     }
 
     public List<Servico> listar() {
@@ -47,8 +60,29 @@ public class ServicoService {
 
     @Transactional
     public void deletar(Long id) {
-        if (!servicoRepository.existsById(id)) {
-            throw new RecursoNaoEncontradoException("Servico nao encontrado");
+        Servico servico = buscarPorId(id);
+
+        long atendimentos = atendimentoServicoRepository.countByServicoId(id);
+        long especialidades = especialidadeRepository.countByServicosId(id);
+        long salas = servicoRepository.countBySalasId(id);
+
+        if (atendimentos > 0 || especialidades > 0 || salas > 0) {
+            List<String> motivos = new ArrayList<>();
+            if (atendimentos > 0) {
+                motivos.add(atendimentos + (atendimentos == 1 ? " atendimento realizado" : " atendimentos realizados"));
+            }
+            if (especialidades > 0) {
+                motivos.add(especialidades + (especialidades == 1 ? " especialidade" : " especialidades"));
+            }
+            if (salas > 0) {
+                motivos.add(salas + (salas == 1 ? " sala vinculada" : " salas vinculadas"));
+            }
+
+            throw new ConflitoException(
+                    "Não é possível excluir o serviço \"" + servico.getNome() + "\" porque ele está vinculado a "
+                            + String.join(", ", motivos)
+                            + ". Remova os vínculos antes de excluir."
+            );
         }
 
         servicoRepository.deleteById(id);

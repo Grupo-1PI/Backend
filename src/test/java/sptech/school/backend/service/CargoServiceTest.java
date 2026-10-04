@@ -13,10 +13,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sptech.school.backend.dto.CargoDto.CargoCriacaoDto;
 import sptech.school.backend.entity.Cargo;
 import sptech.school.backend.entity.Permissao;
+import sptech.school.backend.exception.ConflitoException;
 import sptech.school.backend.exception.RecursoNaoEncontradoException;
 import sptech.school.backend.repository.CargoRepository;
 import sptech.school.backend.repository.FuncionarioRepository;
 import sptech.school.backend.repository.PermissaoRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -245,28 +247,48 @@ class CargoServiceTest {
     @DisplayName("Testes de deleção")
     class CargoServiceDeletarTeste {
 
-        @DisplayName("Unidade: CargoService | Cenario: deve Deletar Cargo Quando Id Existir | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
+        @DisplayName("Unidade: CargoService | Cenario: deve Deletar Cargo Quando Id Existir | Dados: cargo sem dependencias | Verifica: deve deletar")
         @Test
         void deveDeletarCargoQuandoIdExistir() {
-            Mockito.when(repository.existsById(1L)).thenReturn(true);
+            Cargo cargo = new Cargo();
+            cargo.setId(1L);
+            cargo.setNome("Administrador");
+            Mockito.when(repository.findById(1L)).thenReturn(Optional.of(cargo));
+            Mockito.when(funcionarioRepository.countByCargoId(1L)).thenReturn(0L);
 
             service.deletar(1L);
 
-            Mockito.verify(repository).existsById(1L);
             Mockito.verify(repository).deleteById(1L);
+        }
+
+        @DisplayName("Unidade: CargoService | Cenario: deve Lancar Conflito Quando Ha Funcionarios Vinculados | Dados: cargo com dependencias | Verifica: deve detalhar os vinculos e nao deletar")
+        @Test
+        void deveLancarConflitoQuandoHaFuncionariosVinculados() {
+            Cargo cargo = new Cargo();
+            cargo.setId(1L);
+            cargo.setNome("Administrador");
+            cargo.setPermissoes(new ArrayList<>(List.of(criarPermissao(1L, "Gerenciar cargos"))));
+            Mockito.when(repository.findById(1L)).thenReturn(Optional.of(cargo));
+            Mockito.when(funcionarioRepository.countByCargoId(1L)).thenReturn(2L);
+
+            ConflitoException erro = Assertions.assertThrows(
+                    ConflitoException.class, () -> service.deletar(1L));
+
+            Assertions.assertTrue(erro.getMessage().contains("Administrador"));
+            Assertions.assertTrue(erro.getMessage().contains("2 funcionários vinculados"));
+            Mockito.verify(repository, Mockito.never()).deleteById(Mockito.anyLong());
         }
 
         @DisplayName("Unidade: CargoService | Cenario: deve Lancar Exception Quando Id Nao Existir | Dados: dados preparados no arrange do teste | Verifica: deve validar o comportamento esperado")
         @Test
         void deveLancarExceptionQuandoIdNaoExistir() {
-            Mockito.when(repository.existsById(1L)).thenReturn(false);
+            Mockito.when(repository.findById(1L)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(
                     RecursoNaoEncontradoException.class,
                     () -> service.deletar(1L)
             );
 
-            Mockito.verify(repository).existsById(1L);
             Mockito.verify(repository, Mockito.never()).deleteById(Mockito.anyLong());
         }
     }

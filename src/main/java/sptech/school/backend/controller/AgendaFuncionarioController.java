@@ -15,10 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sptech.school.backend.dto.AgendaDto.AgendaExcecaoDto;
+import sptech.school.backend.dto.AgendaDto.AgendaExcecaoListagemDto;
 import sptech.school.backend.dto.AgendaDto.AgendaFuncionarioDto;
 import sptech.school.backend.dto.AgendaDto.AgendaFuncionarioListagemDto;
-import sptech.school.backend.entity.AgendaExcecao;
-import sptech.school.backend.entity.AgendaFuncionario;
 import sptech.school.backend.service.AgendaFuncionarioService;
 import java.util.List;
 
@@ -43,20 +42,20 @@ public class AgendaFuncionarioController {
 
     @Operation(summary = "Listar agenda de um funcionario", description = "Retorna as faixas semanais cadastradas para o funcionario informado.")
     @GetMapping("/{funcionarioId}")
-    public ResponseEntity<List<AgendaFuncionario>> listarPorFuncionario(@PathVariable Long funcionarioId) {
+    public ResponseEntity<List<AgendaFuncionarioListagemDto.AgendaItemDto>> listarPorFuncionario(@PathVariable Long funcionarioId) {
         return ResponseEntity.ok(service.listarPorFuncionario(funcionarioId));
     }
 
 
     @Operation(summary = "Criar agenda semanal", description = "Cria uma faixa de trabalho semanal para um funcionario.")
     @PostMapping
-    public ResponseEntity<AgendaFuncionario> criar(@Valid @RequestBody AgendaFuncionarioDto dto) {
+    public ResponseEntity<AgendaFuncionarioListagemDto.AgendaItemDto> criar(@Valid @RequestBody AgendaFuncionarioDto dto) {
         return ResponseEntity.status(201).body(service.criar(dto));
     }
 
     @Operation(summary = "Atualizar agenda semanal", description = "Atualiza uma faixa de trabalho semanal existente.")
     @PutMapping("/{id}")
-    public ResponseEntity<AgendaFuncionario> atualizar(
+    public ResponseEntity<AgendaFuncionarioListagemDto.AgendaItemDto> atualizar(
             @PathVariable Long id,
             @Valid @RequestBody AgendaFuncionarioDto dto
     ) {
@@ -72,13 +71,13 @@ public class AgendaFuncionarioController {
 
     @Operation(summary = "Listar excecoes de agenda", description = "Retorna bloqueios ou liberacoes excepcionais de um funcionario.")
     @GetMapping("/{funcionarioId}/excecoes")
-    public ResponseEntity<List<AgendaExcecao>> listarExcecoesPorFuncionario(@PathVariable Long funcionarioId) {
+    public ResponseEntity<List<AgendaExcecaoListagemDto>> listarExcecoesPorFuncionario(@PathVariable Long funcionarioId) {
         return ResponseEntity.ok(service.listarExcecoesPorFuncionario(funcionarioId));
     }
 
     @Operation(summary = "Criar excecao de agenda", description = "Cria um bloqueio ou liberacao excepcional na agenda de um funcionario.")
     @PostMapping("/excecoes")
-    public ResponseEntity<AgendaExcecao> criarExcecao(@RequestBody AgendaExcecaoDto dto) {
+    public ResponseEntity<AgendaExcecaoListagemDto> criarExcecao(@RequestBody AgendaExcecaoDto dto) {
         return ResponseEntity.status(201).body(service.criarExcecao(dto));
     }
 

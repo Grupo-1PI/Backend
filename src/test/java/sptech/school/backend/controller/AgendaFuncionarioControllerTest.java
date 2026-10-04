@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import sptech.school.backend.exception.GlobalExceptionHandler;
 import sptech.school.backend.dto.AgendaDto.AgendaExcecaoDto;
+import sptech.school.backend.dto.AgendaDto.AgendaExcecaoListagemDto;
 import sptech.school.backend.dto.AgendaDto.AgendaFuncionarioDto;
 import sptech.school.backend.dto.AgendaDto.AgendaFuncionarioListagemDto;
 import sptech.school.backend.entity.AgendaExcecao;
@@ -67,17 +68,41 @@ class AgendaFuncionarioControllerTest {
     @DisplayName("Unidade: AgendaFuncionarioController | Cenario: get agenda funcionario por funcionario | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200")
     @Test
     void getAgendaFuncionarioPorFuncionario_deveRetornar200() throws Exception {
-        Mockito.when(agendaFuncionarioService.listarPorFuncionario(1L)).thenReturn(List.of(agenda(1L)));
+        Mockito.when(agendaFuncionarioService.listarPorFuncionario(1L)).thenReturn(List.of(agendaItem(1L)));
 
         mockMvc.perform(get("/agenda-funcionario/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].diaSemana").value(2));
     }
 
+    @DisplayName("Unidade: AgendaFuncionarioController | Cenario: get excecoes | Dados: AgendaExcecao crua causaria recursao infinita no JSON | Verifica: resposta nao pode vazar a entidade Funcionario")
+    @Test
+    void getExcecoes_naoDeveSerializarEntidadeFuncionario() throws Exception {
+        Mockito.when(agendaFuncionarioService.listarExcecoesPorFuncionario(1L))
+                .thenReturn(List.of(excecaoItem(1L)));
+
+        mockMvc.perform(get("/agenda-funcionario/1/excecoes"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].funcionario").doesNotExist())
+                .andExpect(jsonPath("$[0].cargo").doesNotExist());
+    }
+
+    @DisplayName("Unidade: AgendaFuncionarioController | Cenario: get agenda de um funcionario | Dados: AgendaFuncionario crua causa recursao infinita no JSON | Verifica: resposta nao pode vazar a entidade Funcionario")
+    @Test
+    void getAgendaDeUmFuncionario_naoDeveSerializarEntidadeFuncionario() throws Exception {
+        Mockito.when(agendaFuncionarioService.listarPorFuncionario(1L))
+                .thenReturn(List.of(agendaItem(1L)));
+
+        mockMvc.perform(get("/agenda-funcionario/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].funcionario").doesNotExist());
+    }
+
     @DisplayName("Unidade: AgendaFuncionarioController | Cenario: post agenda funcionario | Dados: dados preparados no arrange do teste | Verifica: deve retornar 201")
     @Test
     void postAgendaFuncionario_deveRetornar201() throws Exception {
-        Mockito.when(agendaFuncionarioService.criar(Mockito.any(AgendaFuncionarioDto.class))).thenReturn(agenda(1L));
+        Mockito.when(agendaFuncionarioService.criar(Mockito.any(AgendaFuncionarioDto.class))).thenReturn(agendaItem(1L));
 
         mockMvc.perform(post("/agenda-funcionario")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -90,7 +115,7 @@ class AgendaFuncionarioControllerTest {
     @Test
     void putAgendaFuncionario_deveRetornar200() throws Exception {
         Mockito.when(agendaFuncionarioService.atualizar(Mockito.eq(1L), Mockito.any(AgendaFuncionarioDto.class)))
-                .thenReturn(agenda(1L));
+                .thenReturn(agendaItem(1L));
 
         mockMvc.perform(put("/agenda-funcionario/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -109,7 +134,7 @@ class AgendaFuncionarioControllerTest {
     @DisplayName("Unidade: AgendaFuncionarioController | Cenario: get excecoes | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200")
     @Test
     void getExcecoes_deveRetornar200() throws Exception {
-        Mockito.when(agendaFuncionarioService.listarExcecoesPorFuncionario(1L)).thenReturn(List.of(excecao(1L)));
+        Mockito.when(agendaFuncionarioService.listarExcecoesPorFuncionario(1L)).thenReturn(List.of(excecaoItem(1L)));
 
         mockMvc.perform(get("/agenda-funcionario/1/excecoes"))
                 .andExpect(status().isOk())
@@ -119,7 +144,7 @@ class AgendaFuncionarioControllerTest {
     @DisplayName("Unidade: AgendaFuncionarioController | Cenario: post excecoes | Dados: dados preparados no arrange do teste | Verifica: deve retornar 201")
     @Test
     void postExcecoes_deveRetornar201() throws Exception {
-        Mockito.when(agendaFuncionarioService.criarExcecao(Mockito.any(AgendaExcecaoDto.class))).thenReturn(excecao(1L));
+        Mockito.when(agendaFuncionarioService.criarExcecao(Mockito.any(AgendaExcecaoDto.class))).thenReturn(excecaoItem(1L));
 
         mockMvc.perform(post("/agenda-funcionario/excecoes")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -161,6 +186,20 @@ class AgendaFuncionarioControllerTest {
         agenda.setHoraInicio(LocalTime.of(8, 0));
         agenda.setHoraFim(LocalTime.of(12, 0));
         return agenda;
+    }
+
+    private AgendaFuncionarioListagemDto.AgendaItemDto agendaItem(Long id) {
+        return new AgendaFuncionarioListagemDto.AgendaItemDto(id, 2, "08:00", "12:00");
+    }
+
+    private AgendaExcecaoListagemDto excecaoItem(Long id) {
+        return new AgendaExcecaoListagemDto(
+                id,
+                LocalDate.of(2026, 6, 9),
+                LocalTime.of(8, 0),
+                LocalTime.of(12, 0),
+                false
+        );
     }
 
     private AgendaExcecao excecao(Long id) {

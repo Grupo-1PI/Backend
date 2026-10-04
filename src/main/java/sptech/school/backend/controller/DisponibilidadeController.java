@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import sptech.school.backend.dto.DisponibilidadeDto.DiaDisponivelDto;
 import sptech.school.backend.dto.DisponibilidadeDto.HorarioDisponivelDto;
 import sptech.school.backend.dto.DisponibilidadeDto.SalaDisponibilidadeDto;
+import sptech.school.backend.dto.FuncionarioDto.FuncionarioResponseDto;
 import sptech.school.backend.service.DisponibilidadeService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,14 +32,34 @@ public class DisponibilidadeController {
 
     @Operation(summary = "Consultar calendario mensal", description = "Retorna o status de disponibilidade de cada dia do mes informado.")
     @GetMapping("/calendario")
-    public ResponseEntity<List<DiaDisponivelDto>> calcularCalendario(@RequestParam String mes) {
+    public ResponseEntity<List<DiaDisponivelDto>> calcularCalendario(
+            @RequestParam String mes,
+            @RequestParam(required = false) Long servicoId,
+            @RequestParam(required = false) Long funcionarioId
+    ) {
+        if (servicoId != null && funcionarioId != null) {
+            return ResponseEntity.ok(disponibilidadeService.calcularCalendario(mes, servicoId, funcionarioId));
+        }
         return ResponseEntity.ok(disponibilidadeService.calcularCalendario(mes));
+    }
+
+    @Operation(summary = "Listar profissionais aptos para um servico")
+    @GetMapping("/funcionarios")
+    public ResponseEntity<List<FuncionarioResponseDto>> listarFuncionarios(@RequestParam Long servicoId) {
+        return ResponseEntity.ok(disponibilidadeService.listarFuncionariosPorServico(servicoId));
     }
 
     @Operation(summary = "Consultar horarios disponiveis", description = "Retorna slots disponiveis e ocupados para a data informada.")
     @GetMapping("/horarios")
-    public ResponseEntity<List<HorarioDisponivelDto>> calcularHorariosDisponiveis(@RequestParam String data) {
+    public ResponseEntity<List<HorarioDisponivelDto>> calcularHorariosDisponiveis(
+            @RequestParam String data,
+            @RequestParam(required = false) Long servicoId,
+            @RequestParam(required = false) Long funcionarioId
+    ) {
         LocalDate localDate = LocalDate.parse(data);
+        if (servicoId != null && funcionarioId != null) {
+            return ResponseEntity.ok(disponibilidadeService.calcularHorariosDisponiveis(localDate, servicoId, funcionarioId));
+        }
         return ResponseEntity.ok(disponibilidadeService.calcularHorariosDisponiveis(localDate));
     }
 

@@ -11,7 +11,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sptech.school.backend.dto.ServicoDto.ServicoCriacaoDto;
 import sptech.school.backend.entity.Sala;
 import sptech.school.backend.entity.Servico;
+import sptech.school.backend.exception.ConflitoException;
 import sptech.school.backend.exception.RecursoNaoEncontradoException;
+import sptech.school.backend.repository.AtendimentoServicoRepository;
+import sptech.school.backend.repository.EspecialidadeRepository;
 import sptech.school.backend.repository.SalaRepository;
 import sptech.school.backend.repository.ServicoRepository;
 
@@ -28,6 +31,12 @@ class ServicoServiceTest {
 
     @Mock
     private SalaRepository salaRepository;
+
+    @Mock
+    private AtendimentoServicoRepository atendimentoServicoRepository;
+
+    @Mock
+    private EspecialidadeRepository especialidadeRepository;
 
     @InjectMocks
     private ServicoService service;
@@ -126,20 +135,47 @@ class ServicoServiceTest {
         Assertions.assertThrows(RecursoNaoEncontradoException.class, () -> service.atualizar(1L, dto(List.of())));
     }
 
-    @DisplayName("Unidade: ServicoService | Cenario: deletar | Dados: dados preparados no arrange do teste | Verifica: deve excluir")
+    @DisplayName("Unidade: ServicoService | Cenario: deletar | Dados: servico sem dependencias | Verifica: deve excluir")
     @Test
     void deletar_deveExcluir() {
-        Mockito.when(servicoRepository.existsById(1L)).thenReturn(true);
+        Servico servico = new Servico();
+        servico.setId(1L);
+        servico.setNome("Acupuntura");
+        Mockito.when(servicoRepository.findById(1L)).thenReturn(Optional.of(servico));
+        Mockito.when(atendimentoServicoRepository.countByServicoId(1L)).thenReturn(0L);
+        Mockito.when(especialidadeRepository.countByServicosId(1L)).thenReturn(0L);
+        Mockito.when(servicoRepository.countBySalasId(1L)).thenReturn(0L);
 
         service.deletar(1L);
 
         Mockito.verify(servicoRepository).deleteById(1L);
     }
 
+    @DisplayName("Unidade: ServicoService | Cenario: deletar | Dados: servico com atendimentos, especialidades e salas | Verifica: deve lancar conflito detailing os vinculos")
+    @Test
+    void deletar_deveLancarConflito_quandoPossuiDependencias() {
+        Servico servico = new Servico();
+        servico.setId(1L);
+        servico.setNome("Acupuntura");
+        Mockito.when(servicoRepository.findById(1L)).thenReturn(Optional.of(servico));
+        Mockito.when(atendimentoServicoRepository.countByServicoId(1L)).thenReturn(6L);
+        Mockito.when(especialidadeRepository.countByServicosId(1L)).thenReturn(2L);
+        Mockito.when(servicoRepository.countBySalasId(1L)).thenReturn(3L);
+
+        ConflitoException erro = Assertions.assertThrows(
+                ConflitoException.class, () -> service.deletar(1L));
+
+        Assertions.assertTrue(erro.getMessage().contains("Acupuntura"));
+        Assertions.assertTrue(erro.getMessage().contains("6 atendimentos realizados"));
+        Assertions.assertTrue(erro.getMessage().contains("2 especialidades"));
+        Assertions.assertTrue(erro.getMessage().contains("3 salas vinculadas"));
+        Mockito.verify(servicoRepository, Mockito.never()).deleteById(Mockito.anyLong());
+    }
+
     @DisplayName("Unidade: ServicoService | Cenario: deletar | Dados: quando nao existe | Verifica: deve lancar")
     @Test
     void deletar_deveLancar_quandoNaoExiste() {
-        Mockito.when(servicoRepository.existsById(1L)).thenReturn(false);
+        Mockito.when(servicoRepository.findById(1L)).thenReturn(Optional.empty());
 
         Assertions.assertThrows(RecursoNaoEncontradoException.class, () -> service.deletar(1L));
         Mockito.verify(servicoRepository, Mockito.never()).deleteById(Mockito.anyLong());

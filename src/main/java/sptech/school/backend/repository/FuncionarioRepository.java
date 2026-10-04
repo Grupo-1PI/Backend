@@ -14,4 +14,7 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Long> 
     boolean existsByUsuarioId(Long usuarioId);
     boolean existsByCargoId(Long cargoId);
     List<Funcionario> findByEspecialidadesId(Long especialidadeId);
+
+    /** Quantos funcionários estão vinculados ao cargo informado. */
+    long countByCargoId(Long cargoId);
 }
