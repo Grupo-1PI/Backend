@@ -3,13 +3,12 @@ package sptech.school.backend.service;
 import org.springframework.stereotype.Service;
 import sptech.school.backend.dto.DashboardDto.AgendamentoDiasSemanaDto;
 import sptech.school.backend.dto.DashboardDto.ServicoDadosDto;
+import sptech.school.backend.dto.DashboardDto.RetornoPacientesDto;
 import sptech.school.backend.repository.AgendamentoRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class DashboardService {
@@ -21,7 +20,7 @@ public class DashboardService {
     }
 
     public Integer totalAgendamentosAtivos(LocalDate inicio, LocalDate fim) {
-        return agendamentoRepository.findByTotalAgendamentos(inicio.atStartOfDay(), fim.atStartOfDay());
+        return agendamentoRepository.findByTotalAgendamentos(inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay());
     }
 
     public List<ServicoDadosDto> quantidadeServicosUltimosDias(
@@ -30,42 +29,111 @@ public class DashboardService {
     ) {
         return agendamentoRepository.findByQuantidadeDeCadaServico(
                 inicio.atStartOfDay(),
-                fim.atTime(23,59,59)
+                fim.plusDays(1).atStartOfDay()
         );
     }
 
     public List<AgendamentoDiasSemanaDto> buscarPorDiaSemana(LocalDate inicio, LocalDate fim) {
 
-        List<AgendamentoDiasSemanaDto> resultado =
-                agendamentoRepository.findByTotalAtendimentoDiaSemana(inicio.atStartOfDay(), fim.atTime(23, 59, 59));
+        List<Object[]> resultado = agendamentoRepository.findByTotalAtendimentoDiaSemana(
+                inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay());
 
-        Map<String, Long> mapa = resultado.stream()
-                .collect(Collectors.toMap(
-                        AgendamentoDiasSemanaDto::getDiaSemana,
-                        AgendamentoDiasSemanaDto::getTotal,
-                        (a, b) -> a
-                ));
+        String[] dias = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+        long[] totais = new long[7];
 
-        return List.of(
-                new AgendamentoDiasSemanaDto("Sunday", mapa.getOrDefault("Sunday", 0L)),
-                new AgendamentoDiasSemanaDto("Monday", mapa.getOrDefault("Monday", 0L)),
-                new AgendamentoDiasSemanaDto("Tuesday", mapa.getOrDefault("Tuesday", 0L)),
-                new AgendamentoDiasSemanaDto("Wednesday", mapa.getOrDefault("Wednesday", 0L)),
-                new AgendamentoDiasSemanaDto("Thursday", mapa.getOrDefault("Thursday", 0L)),
-                new AgendamentoDiasSemanaDto("Friday", mapa.getOrDefault("Friday", 0L)),
-                new AgendamentoDiasSemanaDto("Saturday", mapa.getOrDefault("Saturday", 0L))
-        );
+        for (Object[] linha : resultado) {
+            int dia = ((Number) linha[0]).intValue();
+            long total = ((Number) linha[1]).longValue();
+            if (dia >= 1 && dia <= 7) {
+                totais[dia - 1] = total;
+            }
+        }
+
+        return java.util.stream.IntStream.range(0, 7)
+                .mapToObj(i -> new AgendamentoDiasSemanaDto(dias[i], totais[i]))
+                .toList();
     }
 
     public Integer totalCancelamentos(LocalDate inicio, LocalDate fim) {
-        return agendamentoRepository.findByTotalCancelamentos(inicio.atStartOfDay(), fim.atTime(23, 59, 59));
+        return agendamentoRepository.findByTotalCancelamentos(inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay());
     }
 
     public Integer clientesAtivos(LocalDate inicio, LocalDate fim) {
-        return agendamentoRepository.findByClienteAtivosNoPeriodo(inicio.atStartOfDay(), fim.atTime(23, 59, 59));
+        return agendamentoRepository.findByClienteAtivosNoPeriodo(inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay());
     }
 
     public Integer clientesNovos(LocalDate inicio) {
         return agendamentoRepository.findByClientesNovosPeriodo(inicio.atStartOfDay());
+    }
+
+    public Long novosPacientes(LocalDate inicio, LocalDate fim) {
+        return agendamentoRepository.findByNovosPacientes(
+                inicio.atStartOfDay(),
+                fim.plusDays(1).atStartOfDay()
+        );
+    }
+
+    public List<RetornoPacientesDto> retornoPacientes(LocalDate inicio, LocalDate fim) {
+        LocalDateTime fimPeriodo = fim.plusDays(1).atStartOfDay();
+
+        List<Object[]> primeiros = agendamentoRepository.findByPrimeiroAtendimentoFinalizado(fimPeriodo);
+
+        List<Object[]> atendimentos = agendamentoRepository.findByAtendimentosFinalizadosNoPeriodo(
+                inicio.atStartOfDay(), fimPeriodo
+        );
+
+        Map<Long, LocalDateTime> primeiroAtendimento = new HashMap<>();
+
+        for (Object[] linha : primeiros) {
+            primeiroAtendimento.put(
+                    ((Number) linha[0]).longValue(),
+                    (LocalDateTime) linha[1]
+            );
+        }
+
+        Map<LocalDate, Set<Long>> pacientesPorSemana = new HashMap<>();
+
+        for (Object[] linha : atendimentos) {
+            Long clienteId = ((Number) linha[0]).longValue();
+            LocalDate data = ((LocalDateTime) linha[1]).toLocalDate();
+            LocalDate semana = data.minusDays(data.getDayOfWeek().getValue() % 7);
+
+            pacientesPorSemana
+                    .computeIfAbsent(semana, chave -> new HashSet<>())
+                    .add(clienteId);
+        }
+
+        List<RetornoPacientesDto> resultado = new ArrayList<>();
+
+        LocalDate semana = inicio.minusDays(inicio.getDayOfWeek().getValue() % 7);
+
+        while (!semana.isAfter(fim)) {
+            Set<Long> pacientes = pacientesPorSemana.getOrDefault(semana, Set.of());
+
+            LocalDate inicioSemana = semana;
+
+            long retornantes = pacientes.stream()
+                    .filter(id -> primeiroAtendimento.get(id).isBefore(inicioSemana.atStartOfDay()))
+                    .count();
+
+            double taxa = pacientes.isEmpty()
+                    ? 0.0
+                    : retornantes * 100.0 / pacientes.size();
+
+            LocalDate primeiroDia = semana.isBefore(inicio) ? inicio : semana;
+            LocalDate ultimoDia = semana.plusDays(6).isAfter(fim) ? fim : semana.plusDays(6);
+
+            resultado.add(new RetornoPacientesDto(
+                    primeiroDia,
+                    ultimoDia,
+                    (long) pacientes.size(),
+                    retornantes,
+                    taxa
+            ));
+
+            semana = semana.plusWeeks(1);
+        }
+
+        return resultado;
     }
 }

@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import sptech.school.backend.dto.DashboardDto.AgendamentoDiasSemanaDto;
 import sptech.school.backend.dto.DashboardDto.ServicoDadosDto;
 import sptech.school.backend.entity.Agendamento;
 
@@ -69,7 +68,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             SELECT COUNT(a.id)
             FROM Agendamento a
             WHERE a.dataHoraInicio >= :inicio
-              AND a.dataHoraInicio <= :fim
+              AND a.dataHoraInicio < :fim
         """)
     Integer findByTotalAgendamentos(
             @Param("inicio") LocalDateTime inicio,
@@ -83,7 +82,8 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             )
             FROM AtendimentoServico ats
             WHERE ats.agendamento.dataHoraInicio >= :inicio
-              AND ats.agendamento.dataHoraInicio <= :fim
+              AND ats.agendamento.dataHoraInicio < :fim
+              AND ats.agendamento.status.id = 4
             GROUP BY ats.servico.nome
     """)
     List<ServicoDadosDto> findByQuantidadeDeCadaServico(
@@ -96,7 +96,8 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
         FROM Agendamento a
         WHERE a.cliente.usuario.ativo = true
           AND a.dataHoraInicio >= :inicio
-          AND a.dataHoraInicio <= :fim
+          AND a.dataHoraInicio < :fim
+          AND a.status.id <> 3
     """)
     Integer findByClienteAtivosNoPeriodo(
             @Param("inicio") LocalDateTime inicio,
@@ -114,33 +115,67 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     );
 
     @Query("""
-        SELECT new sptech.school.backend.dto.DashboardDto.AgendamentoDiasSemanaDto(
-            CASE FUNCTION('DAYOFWEEK', a.dataHoraInicio)
-                WHEN 1 THEN 'Domingo'
-                WHEN 2 THEN 'Segunda-feira'
-                WHEN 3 THEN 'Terça-feira'
-                WHEN 4 THEN 'Quarta-feira'
-                WHEN 5 THEN 'Quinta-feira'
-                WHEN 6 THEN 'Sexta-feira'
-                WHEN 7 THEN 'Sábado'
-            END,
-            COUNT(a)
-        )
-        FROM Agendamento a
-        WHERE a.dataHoraInicio BETWEEN :inicio AND :fim
-        GROUP BY FUNCTION('DAYOFWEEK', a.dataHoraInicio)
-    """)
-    List<AgendamentoDiasSemanaDto> findByTotalAtendimentoDiaSemana(
+    SELECT COUNT(DISTINCT a.cliente.id)
+    FROM Agendamento a
+    WHERE a.status.id = 4
+      AND a.dataHoraInicio >= :inicio
+      AND a.dataHoraInicio < :fim
+      AND NOT EXISTS (
+          SELECT a2.id
+          FROM Agendamento a2
+          WHERE a2.cliente.id = a.cliente.id
+            AND a2.status.id = 4
+            AND a2.dataHoraInicio < :inicio
+      )
+""")
+    Long findByNovosPacientes(
             @Param("inicio") LocalDateTime inicio,
             @Param("fim") LocalDateTime fim
     );
+
+    @Query("""
+    SELECT a.cliente.id, a.dataHoraInicio
+    FROM Agendamento a
+    WHERE a.status.id = 4
+      AND a.dataHoraInicio >= :inicio
+      AND a.dataHoraInicio < :fim
+""")
+    List<Object[]> findByAtendimentosFinalizadosNoPeriodo(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
+
+    @Query("""
+        SELECT FUNCTION('DAYOFWEEK', a.dataHoraInicio), COUNT(a)
+        FROM Agendamento a
+        WHERE a.dataHoraInicio >= :inicio
+          AND a.dataHoraInicio < :fim
+        GROUP BY FUNCTION('DAYOFWEEK', a.dataHoraInicio)
+    """)
+    List<Object[]> findByTotalAtendimentoDiaSemana(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
+
+    @Query("""
+    SELECT a.cliente.id, MIN(a.dataHoraInicio)
+    FROM Agendamento a
+    WHERE a.status.id = 4
+      AND a.dataHoraInicio < :fim
+    GROUP BY a.cliente.id
+""")
+    List<Object[]> findByPrimeiroAtendimentoFinalizado(
+            @Param("fim") LocalDateTime fim
+    );
+
+
 
     @Query("""
         SELECT COUNT(a)
         FROM Agendamento a
         WHERE a.status.id = 3
           AND a.dataHoraInicio >= :inicio
-          AND a.dataHoraInicio <= :fim
+          AND a.dataHoraInicio < :fim
     """)
     Integer findByTotalCancelamentos(
             @Param("inicio") LocalDateTime inicio,
