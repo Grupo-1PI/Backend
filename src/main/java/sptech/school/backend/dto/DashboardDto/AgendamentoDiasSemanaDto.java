@@ -2,19 +2,19 @@ package sptech.school.backend.dto.DashboardDto;
 
 public class AgendamentoDiasSemanaDto {
 
-    private String diaSemana;
+    private Integer diaSemana;
     private Long total;
 
-    public AgendamentoDiasSemanaDto(String diaSemana, Long total) {
+    public AgendamentoDiasSemanaDto(Integer diaSemana, Long total) {
         this.diaSemana = diaSemana;
         this.total = total;
     }
 
-    public String getDiaSemana() {
+    public Integer getDiaSemana() {
         return diaSemana;
     }
 
-    public void setDiaSemana(String diaSemana) {
+    public void setDiaSemana(Integer diaSemana) {
         this.diaSemana = diaSemana;
     }
 

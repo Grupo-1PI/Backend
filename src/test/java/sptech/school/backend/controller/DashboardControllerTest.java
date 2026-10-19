@@ -75,13 +75,13 @@ class DashboardControllerTest {
     @Test
     void getAgendamentosDiaSemana_deveRetornar200() throws Exception {
         Mockito.when(dashboardService.buscarPorDiaSemana(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 30)))
-                .thenReturn(List.of(new AgendamentoDiasSemanaDto("Monday", 2L)));
+                .thenReturn(List.of(new AgendamentoDiasSemanaDto(2, 2L)));
 
         mockMvc.perform(get("/dashboard/agendamentos-dia-semana")
                         .param("inicio", "2026-06-01")
                         .param("fim", "2026-06-30"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].diaSemana").value("Monday"));
+                .andExpect(jsonPath("$[0].diaSemana").value(2));
     }
 
     @DisplayName("Unidade: DashboardController | Cenario: get cancelamentos | Dados: dados preparados no arrange do teste | Verifica: deve retornar 200")

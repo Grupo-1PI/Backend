@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import sptech.school.backend.dto.DashboardDto.AgendamentoDiasSemanaDto;
 import sptech.school.backend.dto.DashboardDto.ServicoDadosDto;
 import sptech.school.backend.entity.Agendamento;
 
@@ -145,14 +146,14 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             @Param("fim") LocalDateTime fim
     );
 
-    @Query("""
-        SELECT FUNCTION('DAYOFWEEK', a.dataHoraInicio), COUNT(a)
-        FROM Agendamento a
-        WHERE a.dataHoraInicio >= :inicio
-          AND a.dataHoraInicio < :fim
-        GROUP BY FUNCTION('DAYOFWEEK', a.dataHoraInicio)
-    """)
-    List<Object[]> findByTotalAtendimentoDiaSemana(
+    @Query(value = """
+        SELECT DAYOFWEEK(data_hora_inicio) AS dia_semana, COUNT(*) AS total
+        FROM agendamento
+        WHERE data_hora_inicio >= :inicio
+          AND data_hora_inicio < :fim
+        GROUP BY DAYOFWEEK(data_hora_inicio)
+    """, nativeQuery = true)
+    List<AgendamentoDiasSemanaDto> findByTotalAtendimentoDiaSemana(
             @Param("inicio") LocalDateTime inicio,
             @Param("fim") LocalDateTime fim
     );

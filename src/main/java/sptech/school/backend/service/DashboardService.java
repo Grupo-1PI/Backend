@@ -20,7 +20,7 @@ public class DashboardService {
     }
 
     public Integer totalAgendamentosAtivos(LocalDate inicio, LocalDate fim) {
-        return agendamentoRepository.findByTotalAgendamentos(inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay());
+        return agendamentoRepository.findByTotalAgendamentos(inicio.atStartOfDay(), fim.atTime(23, 59, 59));
     }
 
     public List<ServicoDadosDto> quantidadeServicosUltimosDias(
@@ -29,37 +29,37 @@ public class DashboardService {
     ) {
         return agendamentoRepository.findByQuantidadeDeCadaServico(
                 inicio.atStartOfDay(),
-                fim.plusDays(1).atStartOfDay()
+                fim.atTime(23, 59, 59)
         );
     }
 
     public List<AgendamentoDiasSemanaDto> buscarPorDiaSemana(LocalDate inicio, LocalDate fim) {
 
-        List<Object[]> resultado = agendamentoRepository.findByTotalAtendimentoDiaSemana(
-                inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay());
+        List<AgendamentoDiasSemanaDto> resultado = agendamentoRepository.findByTotalAtendimentoDiaSemana(
+                inicio.atStartOfDay(), fim.atTime(23, 59, 59));
 
         String[] dias = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
         long[] totais = new long[7];
 
-        for (Object[] linha : resultado) {
-            int dia = ((Number) linha[0]).intValue();
-            long total = ((Number) linha[1]).longValue();
-            if (dia >= 1 && dia <= 7) {
+        for (AgendamentoDiasSemanaDto dto : resultado) {
+            int dia = dto.getDiaSemana();
+            long total = dto.getTotal();
+            if (dia >= 1 && dia <= 7 && totais[dia - 1] == 0) {
                 totais[dia - 1] = total;
             }
         }
 
         return java.util.stream.IntStream.range(0, 7)
-                .mapToObj(i -> new AgendamentoDiasSemanaDto(dias[i], totais[i]))
+                .mapToObj(i -> new AgendamentoDiasSemanaDto(i + 1, totais[i]))
                 .toList();
     }
 
     public Integer totalCancelamentos(LocalDate inicio, LocalDate fim) {
-        return agendamentoRepository.findByTotalCancelamentos(inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay());
+        return agendamentoRepository.findByTotalCancelamentos(inicio.atStartOfDay(), fim.atTime(23, 59, 59));
     }
 
     public Integer clientesAtivos(LocalDate inicio, LocalDate fim) {
-        return agendamentoRepository.findByClienteAtivosNoPeriodo(inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay());
+        return agendamentoRepository.findByClienteAtivosNoPeriodo(inicio.atStartOfDay(), fim.atTime(23, 59, 59));
     }
 
     public Integer clientesNovos(LocalDate inicio) {
@@ -69,12 +69,12 @@ public class DashboardService {
     public Long novosPacientes(LocalDate inicio, LocalDate fim) {
         return agendamentoRepository.findByNovosPacientes(
                 inicio.atStartOfDay(),
-                fim.plusDays(1).atStartOfDay()
+                fim.atTime(23, 59, 59)
         );
     }
 
     public List<RetornoPacientesDto> retornoPacientes(LocalDate inicio, LocalDate fim) {
-        LocalDateTime fimPeriodo = fim.plusDays(1).atStartOfDay();
+        LocalDateTime fimPeriodo = fim.atTime(23, 59, 59);
 
         List<Object[]> primeiros = agendamentoRepository.findByPrimeiroAtendimentoFinalizado(fimPeriodo);
 
