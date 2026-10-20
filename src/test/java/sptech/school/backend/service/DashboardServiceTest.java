@@ -31,7 +31,7 @@ class DashboardServiceTest {
     void totalAgendamentosAtivos_deveRetornarValor() {
         Mockito.when(agendamentoRepository.findByTotalAgendamentos(
                 LocalDateTime.of(2026, 6, 1, 0, 0),
-                LocalDateTime.of(2026, 6, 30, 0, 0)
+                LocalDateTime.of(2026, 6, 30, 23, 59, 59)
         )).thenReturn(10);
 
         Integer resultado = service.totalAgendamentosAtivos(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 30));
@@ -62,7 +62,7 @@ class DashboardServiceTest {
         Mockito.when(agendamentoRepository.findByTotalAtendimentoDiaSemana(
                 LocalDateTime.of(2026, 6, 1, 0, 0),
                 LocalDateTime.of(2026, 6, 30, 23, 59, 59)
-        )).thenReturn(List.of(new AgendamentoDiasSemanaDto("Monday", 2L)));
+        )).thenReturn(List.of(new AgendamentoDiasSemanaDto(2, 2L)));
 
         List<AgendamentoDiasSemanaDto> resultado = service.buscarPorDiaSemana(
                 LocalDate.of(2026, 6, 1),
@@ -80,8 +80,8 @@ class DashboardServiceTest {
                 LocalDateTime.of(2026, 6, 1, 0, 0),
                 LocalDateTime.of(2026, 6, 30, 23, 59, 59)
         )).thenReturn(List.of(
-                new AgendamentoDiasSemanaDto("Monday", 2L),
-                new AgendamentoDiasSemanaDto("Monday", 9L)
+                new AgendamentoDiasSemanaDto(2, 2L),
+                new AgendamentoDiasSemanaDto(2, 9L)
         ));
 
         List<AgendamentoDiasSemanaDto> resultado = service.buscarPorDiaSemana(
