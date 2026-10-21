@@ -21,6 +21,7 @@ import sptech.school.backend.repository.SalaRepository;
 import sptech.school.backend.repository.ServicoRepository;
 import sptech.school.backend.repository.StatusRepository;
 import sptech.school.backend.strategy.RegraAgendamentoStrategy;
+import sptech.school.backend.client.NotificacaoSaasClient;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class AgendamentoService {
     private final ServicoRepository servicoRepository;
     private final StatusRepository statusRepository;
     private final List<RegraAgendamentoStrategy> regras;
+    private final NotificacaoSaasClient notificacaoSaasClient;
 
     public AgendamentoService(
             AgendamentoRepository agendamentoRepository,
@@ -42,7 +44,8 @@ public class AgendamentoService {
             SalaRepository salaRepository,
             ServicoRepository servicoRepository,
             StatusRepository statusRepository,
-            List<RegraAgendamentoStrategy> regras
+            List<RegraAgendamentoStrategy> regras,
+            NotificacaoSaasClient notificacaoSaasClient
     ) {
         this.agendamentoRepository = agendamentoRepository;
         this.clienteRepository = clienteRepository;
@@ -51,6 +54,7 @@ public class AgendamentoService {
         this.servicoRepository = servicoRepository;
         this.statusRepository = statusRepository;
         this.regras = regras;
+        this.notificacaoSaasClient = notificacaoSaasClient;
     }
 
     @Transactional
@@ -78,7 +82,19 @@ public class AgendamentoService {
         vincularFuncionario(salvo, funcionario);
         vincularServico(salvo, servico);
 
-        return agendamentoRepository.save(salvo);
+        Agendamento resultado = agendamentoRepository.save(salvo);
+
+        notificarCliente(cliente);
+
+        return resultado;
+    }
+
+    private void notificarCliente(Cliente cliente) {
+        String telefone = cliente.getUsuario().getTelefone();
+        if (telefone != null && !telefone.startsWith("+")) {
+            telefone = "+55" + telefone;
+        }
+        notificacaoSaasClient.enviar(telefone);
     }
 
     public Page<Agendamento> listar(Pageable pageable) {
