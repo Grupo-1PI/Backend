@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sptech.school.backend.dto.DashboardDto.AgendamentoDiasSemanaDto;
+import sptech.school.backend.dto.DashboardDto.RetornoPacientesDto;
+
 import sptech.school.backend.dto.DashboardDto.ServicoDadosDto;
 import sptech.school.backend.service.DashboardService;
 
@@ -80,6 +82,28 @@ public class DashboardController {
     ) {
         return ResponseEntity.ok(
                 dashboardService.clientesAtivos(inicio, fim)
+        );
+    }
+
+    @Operation(summary = "Novos pacientes", description = "Conta pacientes cujo primeiro atendimento finalizado ocorreu no periodo.")
+    @GetMapping("/novos-pacientes")
+    public ResponseEntity<Long> novosPacientes(
+            @RequestParam LocalDate inicio,
+            @RequestParam LocalDate fim
+    ) {
+        return ResponseEntity.ok(
+                dashboardService.novosPacientes(inicio, fim)
+        );
+    }
+
+    @Operation(summary = "Retorno de pacientes", description = "Retorna a taxa semanal de retorno dos pacientes.")
+    @GetMapping("/retorno-pacientes")
+    public ResponseEntity<List<RetornoPacientesDto>> retornoPacientes(
+            @RequestParam LocalDate inicio,
+            @RequestParam LocalDate fim
+    ) {
+        return ResponseEntity.ok(
+                dashboardService.retornoPacientes(inicio, fim)
         );
     }
 

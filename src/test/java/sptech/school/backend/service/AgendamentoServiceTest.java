@@ -12,12 +12,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import sptech.school.backend.client.NotificacaoSaasClient;
 import sptech.school.backend.entity.Agendamento;
 import sptech.school.backend.entity.Cliente;
 import sptech.school.backend.entity.Funcionario;
 import sptech.school.backend.entity.Sala;
 import sptech.school.backend.entity.Servico;
 import sptech.school.backend.entity.Status;
+import sptech.school.backend.entity.Usuario;
 import sptech.school.backend.exception.RecursoNaoEncontradoException;
 import sptech.school.backend.repository.AgendamentoRepository;
 import sptech.school.backend.repository.ClienteRepository;
@@ -63,6 +65,9 @@ class AgendamentoServiceTest {
 
     @Mock
     private RegraAgendamentoStrategy regra;
+
+    @Mock(lenient = true)
+    private NotificacaoSaasClient notificacaoSaasClient;
 
     @InjectMocks
     private AgendamentoService service;
@@ -267,11 +272,12 @@ class AgendamentoServiceTest {
     }
 
     private void stubRecursos() {
-        Mockito.when(clienteRepository.findById(1L)).thenReturn(Optional.of(new Cliente()));
+        Mockito.when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteComUsuario(1L)));
         Mockito.when(funcionarioRepository.findById(1L)).thenReturn(Optional.of(funcionario(1L)));
         Mockito.when(salaRepository.findById(1L)).thenReturn(Optional.of(sala(1L)));
         Mockito.when(servicoRepository.findById(1L)).thenReturn(Optional.of(servico(1L)));
         Mockito.when(statusRepository.findById(1L)).thenReturn(Optional.of(status(1L)));
+        Mockito.doNothing().when(notificacaoSaasClient).enviar(Mockito.anyString());
     }
 
     private void stubRegras() {
@@ -320,5 +326,16 @@ class AgendamentoServiceTest {
         Status status = new Status();
         status.setId(id);
         return status;
+    }
+
+    private Cliente clienteComUsuario(Long id) {
+        Usuario usuario = new Usuario();
+        usuario.setId(id);
+        usuario.setTelefone("+5511999999999");
+
+        Cliente cliente = new Cliente();
+        cliente.setId(id);
+        cliente.setUsuario(usuario);
+        return cliente;
     }
 }
