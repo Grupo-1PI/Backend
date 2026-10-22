@@ -48,4 +48,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ex.getStatusCode())
                 .body(Map.of("mensagem", ex.getReason() != null ? ex.getReason() : ex.getMessage()));
     }
+
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<Map<String, String>> handleIllegalArgs(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("mensagem", ex.getMessage()));
+    }
 }

@@ -11,6 +11,7 @@ public class ServicoResponseDto {
     private String descricao;
     private Integer tempoMedio;
     private List<String> salas;
+    private List<Long> especialidadesIds;
 
     public Long getId() {
         return id;
@@ -58,5 +59,13 @@ public class ServicoResponseDto {
 
     public void setSalas(List<String> salas) {
         this.salas = salas;
+    }
+
+    public List<Long> getEspecialidadesIds() {
+        return especialidadesIds;
+    }
+
+    public void setEspecialidadesIds(List<Long> especialidadesIds) {
+        this.especialidadesIds = especialidadesIds;
     }
 }
