@@ -2,6 +2,7 @@ package sptech.school.backend.mapper;
 
 import sptech.school.backend.dto.ServicoDto.ServicoResponseDto;
 import sptech.school.backend.dto.ServicoDto.ServicoResumoDto;
+import sptech.school.backend.entity.Especialidade;
 import sptech.school.backend.entity.Sala;
 import sptech.school.backend.entity.Servico;
 
@@ -26,6 +27,11 @@ public class ServicoMapper {
         dto.setSalas(
                 servico.getSalas().stream()
                         .map(Sala::getDescricao)
+                        .toList()
+        );
+        dto.setEspecialidadesIds(
+                servico.getEspecialidades().stream()
+                        .map(Especialidade::getId)
                         .toList()
         );
         return dto;
