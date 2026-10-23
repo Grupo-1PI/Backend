@@ -15,6 +15,7 @@ import sptech.school.backend.mapper.FuncionarioMapper;
 import sptech.school.backend.repository.AgendaExcecaoRepository;
 import sptech.school.backend.repository.AgendaFuncionarioRepository;
 import sptech.school.backend.repository.AgendamentoRepository;
+import sptech.school.backend.repository.FuncionarioRepository;
 import sptech.school.backend.repository.SalaRepository;
 import sptech.school.backend.repository.ServicoRepository;
 import sptech.school.backend.repository.FuncionarioAgendamentoRepository;
@@ -42,13 +43,16 @@ public class DisponibilidadeService {
     private final ServicoRepository servicoRepository;
     private final FuncionarioAgendamentoRepository funcionarioAgendamentoRepository;
 
+    private final FuncionarioRepository funcionarioRepository;
+
     public DisponibilidadeService(
             AgendamentoRepository agendamentoRepository,
             AgendaFuncionarioRepository agendaFuncionarioRepository,
             AgendaExcecaoRepository agendaExcecaoRepository,
             SalaRepository salaRepository,
             ServicoRepository servicoRepository,
-            FuncionarioAgendamentoRepository funcionarioAgendamentoRepository
+            FuncionarioAgendamentoRepository funcionarioAgendamentoRepository,
+            FuncionarioRepository funcionarioRepository
     ) {
         this.agendamentoRepository = agendamentoRepository;
         this.agendaFuncionarioRepository = agendaFuncionarioRepository;
@@ -56,6 +60,7 @@ public class DisponibilidadeService {
         this.salaRepository = salaRepository;
         this.servicoRepository = servicoRepository;
         this.funcionarioAgendamentoRepository = funcionarioAgendamentoRepository;
+        this.funcionarioRepository = funcionarioRepository;
     }
 
     @Transactional(readOnly = true)
@@ -109,6 +114,15 @@ public class DisponibilidadeService {
                 .map(AgendaFuncionario::getFuncionario)
                 .filter(Objects::nonNull)
                 .filter(funcionario -> atendeServico(funcionario, servicoId))
+                .distinct()
+                .sorted(Comparator.comparing(Funcionario::getId))
+                .map(FuncionarioMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<FuncionarioResponseDto> listarFuncionariosPorEspecialidade(Long especialidadeId) {
+        return funcionarioRepository.findByEspecialidadesId(especialidadeId).stream()
                 .distinct()
                 .sorted(Comparator.comparing(Funcionario::getId))
                 .map(FuncionarioMapper::toResponse)

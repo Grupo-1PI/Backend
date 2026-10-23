@@ -49,6 +49,12 @@ public class DisponibilidadeController {
         return ResponseEntity.ok(disponibilidadeService.listarFuncionariosPorServico(servicoId));
     }
 
+    @Operation(summary = "Listar profissionais por especialidade")
+    @GetMapping("/funcionarios/especialidade")
+    public ResponseEntity<List<FuncionarioResponseDto>> listarFuncionariosPorEspecialidade(@RequestParam Long especialidadeId) {
+        return ResponseEntity.ok(disponibilidadeService.listarFuncionariosPorEspecialidade(especialidadeId));
+    }
+
     @Operation(summary = "Consultar horarios disponiveis", description = "Retorna slots disponiveis e ocupados para a data informada.")
     @GetMapping("/horarios")
     public ResponseEntity<List<HorarioDisponivelDto>> calcularHorariosDisponiveis(
