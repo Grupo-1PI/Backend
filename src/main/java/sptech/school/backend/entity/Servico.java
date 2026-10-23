@@ -38,6 +38,9 @@ public class Servico {
     )
     private List<Sala> salas = new ArrayList<>();
 
+    @ManyToMany(mappedBy = "servicos")
+    private List<Especialidade> especialidades = new ArrayList<>();
+
     public Long getId() {
         return id;
     }
@@ -79,5 +82,9 @@ public class Servico {
     }
 
     public List<Sala> getSalas() { return salas; }
+
+    public List<Especialidade> getEspecialidades() { return especialidades; }
+
+    public void setEspecialidades(List<Especialidade> especialidades) { this.especialidades = especialidades; }
 
 }
